@@ -2,4 +2,4 @@
 
 A simple informative Discord bot.
 
-- Store the bot's token in a .env
+- The bot's token should be stored in a .env
