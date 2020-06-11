@@ -4,6 +4,7 @@ import keep_alive
 import os
 
 client = commands.Bot(command_prefix='!')
+client.remove_command('help')
 token = os.getenv('TOKEN')
 
 @client.event
@@ -19,12 +20,18 @@ async def in_servers():
 
 @client.command()
 async def ping(ctx):
+  '''
+  Show the latency.
+  '''
   await ctx.send(f"**Command successfully tested! Ping: __{round(client.latency / 100)}__**")
 
 
 @client.command()
 @commands.cooldown(1, 10, type=commands.BucketType.guild)
 async def info(ctx):
+    '''
+    Does something
+    '''
     embed = discord.Embed(title='Artemis Bot', description="__**WHAT IS IT?:**__```Hello, the Artemis Bot is an open source bot based on astronomy, which its only purpose is to portray information about the universe.```", colour=discord.Colour.dark_purple(), url="https://discord.gg/8Bemp2a", timestamp=ctx.message.created_at)
     embed.add_field(name="📚 __**Topics**__",
                     value="More than 50 topics to explore.",
