@@ -30,7 +30,7 @@ async def info(ctx):
                     value="More than 50 topics to explore.",
                     inline=False)
     embed.add_field(name="💻 __**Programmed in**__",
-                    value="The Artemis bot was built in Python, and you can find its GitHub repository [here](https://www.google.com/)",
+                    value="The Artemis bot was built in Python, and you can find its GitHub repository [here](https://github.com/yagomichalak/astronomy-bot)",
                     inline=False)
     embed.add_field(name="🌎 __**Global ranking**__ ", value="It has a global level ranking based on messages sent.", inline=False)
     embed.set_footer(text=ctx.guild.name,
