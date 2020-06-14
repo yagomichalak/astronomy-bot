@@ -21,7 +21,7 @@ async def in_servers():
 @client.command()
 async def ping(ctx):
   '''
-  Show the latency.
+  Shows the latency.
   '''
   await ctx.send(f"**Command successfully tested! Ping: __{round(client.latency / 100)}__**")
 

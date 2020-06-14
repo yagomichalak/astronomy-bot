@@ -7,6 +7,9 @@ import sqlite3
 from datetime import datetime
 
 class Astronomy(commands.Cog):
+  '''
+  Something cool
+  '''
 
   def __init__(self, client):
     self.client = client
@@ -220,7 +223,7 @@ class Astronomy(commands.Cog):
     if not member:
       member = ctx.author
     
-    the_user = await self.get_user(ctx.author.id)
+    the_user = await self.get_user(member.id)
     if not the_user:
       return await ctx.send(f"**{member} doesn't have a profile yet!**")
     embed = discord.Embed(title="__Info__", colour=member.color, timestamp=ctx.message.created_at)
@@ -231,6 +234,58 @@ class Astronomy(commands.Cog):
     #{user[0][1]} / {((user[0][2]+1)**5)}."
     return await ctx.send(embed=embed)
 
+
+  @commands.command()
+  @commands.has_permissions(add_reactions=True, embed_links=True)
+  async def help(self, ctx, co: str = None) -> object:
+    '''Provides a description of all commands and cogs.
+    :param co: Cog or command that you want to see. (Optional)'''
+    if not co:
+      halp=discord.Embed(title='Cog Listing and Uncatergorized Commands',
+                                description='```Use !help *cog* or help *command* to find out more about them!\n(BTW, the Cog Name Must Be in Title Case, Just Like this Sentence.)```', color=discord.Color.dark_purple(),timestamp=ctx.message.created_at)
+
+      cogs_desc = ''
+      for x in self.client.cogs:
+          if cog_doc := self.client.cogs[x].__doc__:
+            cogs_desc += (f"{x}\n")
+      halp.add_field(name='__Cogs__',value=cogs_desc[0:len(cogs_desc)-1],inline=False)
+
+      cmds_desc = ''
+      for y in self.client.walk_commands():
+          if not y.cog_name and not y.hidden:
+              if y.help:
+                cmds_desc += (f"{y.name} - `{y.help}`"+'\n')
+              else:
+                cmds_desc += (f"{y.name}"+'\n')
+      halp.add_field(name='__Uncatergorized Commands__',value=cmds_desc[0:len(cmds_desc)-1],inline=False)
+
+      await ctx.message.add_reaction(emoji='✉')
+      #return await ctx.send(embed=halp)
+      return await ctx.send('',embed=halp)
+
+
+    # Checks if it's a command
+    if command := self.client.get_command(co):
+      command_embed = discord.Embed(title=f"__Command:__ {command.name}", description=f"__**Description:**__\n```{command.help}```", color=discord.Color.dark_purple(), timestamp=ctx.message.created_at)
+      #print(command.__doc__)
+      await ctx.send(embed=command_embed)
+
+    # Checks if it's a cog
+    elif cog := self.client.get_cog(co):
+      cog_embed = discord.Embed(title=f"__Cog:__ {cog.qualified_name}", description=f"__**Description:**__\n```{cog.description}```", color=discord.Color.dark_purple(), timestamp=ctx.message.created_at)
+      #name = command.qualified_name
+      #print(command.description)
+      for c in cog.get_commands():
+          if not c.hidden:
+              cog_embed.add_field(name=c.name,value=c.help,inline=False)
+
+      await ctx.send(embed=cog_embed)
+
+    # Otherwise, it's an invalid parameter (Not found)
+    else:
+      await ctx.send(f"**Invalid parameter! `{co}` is neither a command nor a cog!**")
+    
+  '''
   @commands.command()
   @commands.has_permissions(add_reactions=True, embed_links=True)
   async def help(self,ctx,*cog):
@@ -274,7 +329,7 @@ class Astronomy(commands.Cog):
                       await ctx.message.add_reaction(emoji='✉')
                   await ctx.message.author.send('',embed=halp)
       except:
-          await ctx.send("**Excuse me, I can't send embeds.**")
+          await ctx.send("**Excuse me, I can't send embeds.**")'''
 
   @commands.command()
   async def source(self, ctx, command: str = None):
