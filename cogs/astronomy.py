@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands, tasks
 import os
-from images.all_topics import topics, image_links
+from images.all_topics import topics, image_links, galaxy
 import textwrap
 import sqlite3
 from datetime import datetime
@@ -220,17 +220,22 @@ class Astronomy(commands.Cog):
 
   @commands.command()
   async def profile(self, ctx, member: discord.Member = None) -> object:
+    '''
+    Shows your astronomical profile.
+    '''
     if not member:
       member = ctx.author
     
     the_user = await self.get_user(member.id)
     if not the_user:
       return await ctx.send(f"**{member} doesn't have a profile yet!**")
-    embed = discord.Embed(title="__Info__", colour=member.color, timestamp=ctx.message.created_at)
-    embed.add_field(name="__**Level**__", value=f"{the_user[0][1]}.", inline=True)
-    embed.add_field(name="__**EXP**__", value=f"{the_user[0][2]} / {((the_user[0][1]+1)**5)}.", inline=True)
-    embed.set_thumbnail(url=member.avatar_url)
+    astro = await self.get_astro(the_user[0][1], galaxy)
+    embed = discord.Embed(title="__Profile__", colour=member.color, timestamp=ctx.message.created_at)
+    embed.add_field(name="__**Rank**__", value=f"{astro[0]}.", inline=False)
+    embed.add_field(name="__**EXP**__", value=f"{the_user[0][2]} / {((the_user[0][1]+1)**5)}.", inline=False)
+    embed.set_thumbnail(url=astro[1])
     embed.set_footer(text=f"{member}", icon_url=member.avatar_url)
+    #embed.set_image(url='https://cdn.discordapp.com/attachments/719020754858934294/722519380914602145/mercury.png')
     #{user[0][1]} / {((user[0][2]+1)**5)}."
     return await ctx.send(embed=embed)
 
@@ -284,52 +289,6 @@ class Astronomy(commands.Cog):
     # Otherwise, it's an invalid parameter (Not found)
     else:
       await ctx.send(f"**Invalid parameter! `{co}` is neither a command nor a cog!**")
-    
-  '''
-  @commands.command()
-  @commands.has_permissions(add_reactions=True, embed_links=True)
-  async def help(self,ctx,*cog):
-      """Gets all cogs and commands of mine."""
-      try:
-          if not cog:
-              """Cog listing.  What more?"""
-              halp=discord.Embed(title='Cog Listing and Uncatergorized Commands',
-                                description='Use `!help *cog*` to find out more about them!\n(BTW, the Cog Name Must Be in Title Case, Just Like this Sentence.)', color=discord.Color.dark_purple(), timestamp=ctx.message.created_at)
-              cogs_desc = ''
-              for x in self.client.cogs:
-                  cogs_desc += ('{} - {}'.format(x,self.client.cogs[x].__doc__)+'\n')
-              halp.add_field(name='Cogs',value=cogs_desc[0:len(cogs_desc)-1],inline=False)
-              cmds_desc = ''
-              for y in self.client.walk_commands():
-                  if not y.cog_name and not y.hidden:
-                      cmds_desc += ('{} - {}'.format(y.name,y.help)+'\n')
-              halp.add_field(name='Uncatergorized Commands',value=cmds_desc[0:len(cmds_desc)-1],inline=False)
-              await ctx.message.add_reaction(emoji='✉')
-              await ctx.message.author.send('',embed=halp)
-          else:
-              """Helps me remind you if you pass too many args."""
-              if len(cog) > 1:
-                  halp = discord.Embed(title='Error!',description='That is way too many cogs!',color=discord.Color.red(), timestamp=ctx.message.created_at)
-                  await ctx.message.author.send('',embed=halp)
-              else:
-                  """Command listing within a cog."""
-                  found = False
-                  for x in self.client.cogs:
-                      for y in cog:
-                          if x == y:
-                              halp=discord.Embed(title=cog[0]+' Command Listing',description=self.client.cogs[cog[0]].__doc__, color=discord.Color.dark_purple(), timestamp=ctx.message.created_at)
-                              for c in self.client.get_cog(y).get_commands():
-                                  if not c.hidden:
-                                      halp.add_field(name=c.name,value=c.help,inline=False)
-                              found = True
-                  if not found:
-                      """Reminds you if that cog doesn't exist."""
-                      halp = discord.Embed(title='Error!',description='How do you even use "'+cog[0]+'"?',color=discord.Color.red(), timestamp=ctx.message.created_at)
-                  else:
-                      await ctx.message.add_reaction(emoji='✉')
-                  await ctx.message.author.send('',embed=halp)
-      except:
-          await ctx.send("**Excuse me, I can't send embeds.**")'''
 
   @commands.command()
   async def source(self, ctx, command: str = None):
@@ -367,7 +326,28 @@ class Astronomy(commands.Cog):
         base = 'https://github.com/Rapptz/discord.py'
         final_url = '<{}/blob/master/{}#L{}>'.format(base, location, src.co_firstlineno)
 
-    await ctx.send(final_url) 
+    await ctx.send(final_url)
+
+  async def get_astro(self, level, galaxy) -> str:
+    i = 0
+    has_planet = False
+    for system in galaxy:
+        for pi, p in reversed(list(system.items())):
+            print(pi, p)
+            i += 1
+            #print(f"Planet: {i} {p}")
+            if i == level:
+                #print(f"You're {system[pi]}")
+                has_planet = [pi, system[pi]]
+                break
+        if has_planet:
+            break
+
+    else:
+        has_planet = f"Asteroid {level}"
+
+    return has_planet
+
 
 def setup(client):
   #client.add_command(help)
