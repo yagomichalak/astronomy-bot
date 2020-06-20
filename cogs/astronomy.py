@@ -19,18 +19,18 @@ class Astronomy(commands.Cog):
   async def on_ready(self):
     print("Astronomy cog is online!")
 
-  @commands.Cog.listener()
-  async def on_command_error(self, ctx, error):
-      if not ctx.command.cog == self:
-          return
-      if isinstance(error, commands.MissingPermissions):
-          await ctx.send("**You don't have perms to run this command!**")
+  # @commands.Cog.listener()
+  # async def on_command_error(self, ctx, error):
+  #     if not ctx.command.cog == self:
+  #         return
+  #     if isinstance(error, commands.MissingPermissions):
+  #         await ctx.send("**You don't have perms to run this command!**")
 
-      if isinstance(error, commands.MissingRequiredArgument):
-          await ctx.send('**Make sure to inform all parameters!**')
+  #     if isinstance(error, commands.MissingRequiredArgument):
+  #         await ctx.send('**Make sure to inform all parameters!**')
 
-      if isinstance(error, commands.BadArgument):
-          await ctx.send(f"**Inform valid a parameter!**")
+  #     if isinstance(error, commands.BadArgument):
+  #         await ctx.send(f"**Inform valid a parameter!**")
 
   
   @commands.Cog.listener()
@@ -230,10 +230,10 @@ class Astronomy(commands.Cog):
     if not the_user:
       return await ctx.send(f"**{member} doesn't have a profile yet!**")
     astro = await self.get_astro(the_user[0][1], galaxy)
-    embed = discord.Embed(title="__Profile__", colour=member.color, timestamp=ctx.message.created_at)
+    embed = discord.Embed(title="__Profile__", colour=member.color, timestamp=ctx.message.created_at, url=astro[1][1])
     embed.add_field(name="__**Rank**__", value=f"{astro[0]}.", inline=False)
     embed.add_field(name="__**EXP**__", value=f"{the_user[0][2]} / {((the_user[0][1]+1)**5)}.", inline=False)
-    embed.set_thumbnail(url=astro[1])
+    embed.set_thumbnail(url=astro[1][0])
     embed.set_footer(text=f"{member}", icon_url=member.avatar_url)
     #embed.set_image(url='https://cdn.discordapp.com/attachments/719020754858934294/722519380914602145/mercury.png')
     #{user[0][1]} / {((user[0][2]+1)**5)}."
@@ -333,7 +333,7 @@ class Astronomy(commands.Cog):
     has_planet = False
     for system in galaxy:
         for pi, p in reversed(list(system.items())):
-            print(pi, p)
+            #print(pi, p)
             i += 1
             #print(f"Planet: {i} {p}")
             if i == level:
@@ -344,8 +344,7 @@ class Astronomy(commands.Cog):
             break
 
     else:
-        has_planet = f"Asteroid {level}"
-
+        has_planet = [level, f"Asteroid {level}"]
     return has_planet
 
 
