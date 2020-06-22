@@ -15,10 +15,6 @@ async def on_ready():
 @client.event
 async def on_command_error(ctx, error):
 
-  # Checks if it's a cog command
-  if ctx.command and ctx.command.cog:
-    return
-
   if isinstance(error, commands.MissingPermissions):
     await ctx.send(error)
 
@@ -37,7 +33,8 @@ async def on_command_error(ctx, error):
   if isinstance(error, commands.NotOwner):
     await ctx.send("**You can't do that, you're not the owner!**")
 
-  await ctx.send(error)
+  if isinstance(error, commands.MissingRequiredArgument):
+    await ctx.send('**Make sure to inform all parameters!**')
 
 
 @tasks.loop(seconds=10)
@@ -57,7 +54,7 @@ async def ping(ctx):
 @commands.cooldown(1, 10, type=commands.BucketType.guild)
 async def info(ctx):
     '''
-    Does something
+    Shows your astro-profile
     '''
     embed = discord.Embed(title='Artemis Bot', description="__**WHAT IS IT?:**__```Hello, the Artemis Bot is an open source bot based on astronomy, which its only purpose is to portray information about the universe.```", colour=discord.Colour.dark_purple(), url="https://discord.gg/8Bemp2a", timestamp=ctx.message.created_at)
     embed.add_field(name="📚 __**Topics**__",
@@ -81,7 +78,7 @@ async def help(ctx, co: str = None) -> object:
   '''Provides a description of all commands and cogs.
   :param co: Cog or command that you want to see. (Optional)'''
   if not co:
-    halp=discord.Embed(title='Cog Listing and Uncatergorized Commands',
+    halp=discord.Embed(title='Cog Listing and Uncategorized Commands',
                               description='```Use o!help *cog* or help *command* to find out more about them!\n(BTW, the Cog Name Must Be in Title Case, Just Like this Sentence.)```', color=discord.Color.dark_purple(),timestamp=ctx.message.created_at)
 
     cogs_desc = []
@@ -96,7 +93,7 @@ async def help(ctx, co: str = None) -> object:
               cmds_desc += (f"{y.name} - `{y.help}`"+'\n')
             else:
               cmds_desc += (f"{y.name}"+'\n')
-    halp.add_field(name='__Uncatergorized Commands__',value=cmds_desc[0:len(cmds_desc)-1],inline=False)
+    halp.add_field(name='__Uncategorized Commands__',value=cmds_desc[0:len(cmds_desc)-1],inline=False)
 
     await ctx.message.add_reaction(emoji='✉')
     #return await ctx.send(embed=halp)

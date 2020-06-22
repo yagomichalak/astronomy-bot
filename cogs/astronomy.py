@@ -18,29 +18,6 @@ class Astronomy(commands.Cog):
   @commands.Cog.listener()
   async def on_ready(self):
     print("Astronomy cog is online!")
-
-  @commands.Cog.listener()
-  async def on_command_error(self, ctx, error):
-
-    # Checks if it's a cog command
-    if not ctx.command or ctx.command.cog != self:
-      return
-
-    if isinstance(error, commands.BadArgument):
-      await ctx.send(f"**Inform valid a parameter!**")
-      
-    if isinstance(error, commands.MissingRequiredArgument):
-        await ctx.send('**Make sure to inform all parameters!**')
-
-    if isinstance(error, commands.BotMissingPermissions):
-      await ctx.send("**I don't have permissions to run this command!**")
-
-    if isinstance(error, commands.MissingPermissions):
-      await ctx.send("**You don't have permissions to run this command!**")
-
-    if isinstance(error, commands.NotOwner):
-      await ctx.send("**You can't do that, you're not the owner!**")
-
   
   @commands.Cog.listener()
   async def on_message(self, message):
@@ -107,21 +84,6 @@ class Astronomy(commands.Cog):
     db = sqlite3.connect("universe.db")
     mycursor = db.cursor()
     return mycursor, db
-
-  @commands.command()
-  async def test(self, ctx, cmd: str = None):
-    if not cmd:
-      return await ctx.send("**Inform a command!**")
-    #print([x for x in self.client.walk_commands()])
-    '''for scmd in self.client.commands:
-      if scmd.name == cmd:
-        return await ctx.send(scmd.help)'''
-    
-    s_cmd = self.client.get_command(cmd)
-    if s_cmd:
-      await ctx.send(s_cmd.help)
-    else:
-      await ctx.send("**Command not found!**")
     
 
   # Database commands
