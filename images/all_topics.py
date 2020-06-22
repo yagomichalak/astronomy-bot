@@ -3,9 +3,32 @@ import os
 topics = [fn[:-4].title() for fn in os.listdir("./texts") if fn.endswith('.txt')]
 
 image_links = {
-  'Astronomy': 'https://cdn.discordapp.com/attachments/719020754858934294/719571971658088458/astronomy.png',
-  'Planet':
-  'https://cdn.discordapp.com/attachments/719020754858934294/719595296249610371/planet.png'}
+  "Astronomy":
+  ["https://cdn.discordapp.com/attachments/719020754858934294/719571971658088458/astronomy.png", "https://www.space.com/16014-astronomy.html"],
+  "Planet":["https://cdn.discordapp.com/attachments/719020754858934294/719595296249610371/planet.png", "https://solarsystem.nasa.gov/planets/in-depth/"],
+  "Black_Hole":["https://cdn.discordapp.com/attachments/719020754858934294/723903577063424121/black_hole.jpg", "https://www.nasa.gov/audience/forstudents/k-4/stories/nasa-knows/what-is-a-black-hole-k4.html"],
+  "Universe":["https://cdn.discordapp.com/attachments/719020754858934294/719021292761645086/universe.jpg", "https://en.wikipedia.org/wiki/Universe"],
+  "Galaxy":["https://cdn.discordapp.com/attachments/719020754858934294/724639753617670165/galaxy.jpg", "https://en.wikipedia.org/wiki/Galaxy"],
+  "Constellation":["https://cdn.discordapp.com/attachments/719020754858934294/724639871817482240/constellation.jpg", "https://en.wikipedia.org/wiki/Constellation"],
+  "Planetary_System":
+  ["https://cdn.discordapp.com/attachments/719020754858934294/724640040353005598/planetary_system.jpg", "https://en.wikipedia.org/wiki/Planetary_system"],
+  "White_Hole":
+  ["https://cdn.discordapp.com/attachments/719020754858934294/724640133319622706/white_hole.jpg", "https://en.wikipedia.org/wiki/White_hole"],
+  "Supernova":
+  ["https://cdn.discordapp.com/attachments/719020754858934294/724640228794695720/supernova.jpg", "https://en.wikipedia.org/wiki/Supernova"],
+  "Satellite":
+  ["https://cdn.discordapp.com/attachments/719020754858934294/724640318942740501/satellite.jpg", "https://en.wikipedia.org/wiki/Satellite"],
+  "Natural_Satellite":
+  ["https://cdn.discordapp.com/attachments/719020754858934294/724640423070400542/natural_satellite.jpg", "https://en.wikipedia.org/wiki/Natural_satellite"],
+  "Nebula":
+  ["https://cdn.discordapp.com/attachments/719020754858934294/724640498073206794/nebula.jpg", "https://simple.wikipedia.org/wiki/Nebula"],
+  "Exoplanet":
+  ["https://cdn.discordapp.com/attachments/719020754858934294/724640554058645554/exoplanet.jpg", "https://simple.wikipedia.org/wiki/Extrasolar_planet"],
+  "Gravity":
+  ["https://cdn.discordapp.com/attachments/719020754858934294/724640626167119942/gravity.png", "https://simple.wikipedia.org/wiki/Gravity"],
+  "Dark_Matter":
+  ["https://cdn.discordapp.com/attachments/719020754858934294/724640790277783683/dark_matter.jpg", "https://simple.wikipedia.org/wiki/Dark_matter"]
+  }
 
 
 

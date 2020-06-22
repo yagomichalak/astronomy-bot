@@ -8,7 +8,7 @@ from datetime import datetime
 
 class Astronomy(commands.Cog):
   '''
-  Something cool
+  All you need to know regarding astronomy.
   '''
 
   def __init__(self, client):
@@ -19,18 +19,27 @@ class Astronomy(commands.Cog):
   async def on_ready(self):
     print("Astronomy cog is online!")
 
-  # @commands.Cog.listener()
-  # async def on_command_error(self, ctx, error):
-  #     if not ctx.command.cog == self:
-  #         return
-  #     if isinstance(error, commands.MissingPermissions):
-  #         await ctx.send("**You don't have perms to run this command!**")
+  @commands.Cog.listener()
+  async def on_command_error(self, ctx, error):
 
-  #     if isinstance(error, commands.MissingRequiredArgument):
-  #         await ctx.send('**Make sure to inform all parameters!**')
+    # Checks if it's a cog command
+    if not ctx.command or ctx.command.cog != self:
+      return
 
-  #     if isinstance(error, commands.BadArgument):
-  #         await ctx.send(f"**Inform valid a parameter!**")
+    if isinstance(error, commands.BadArgument):
+      await ctx.send(f"**Inform valid a parameter!**")
+      
+    if isinstance(error, commands.MissingRequiredArgument):
+        await ctx.send('**Make sure to inform all parameters!**')
+
+    if isinstance(error, commands.BotMissingPermissions):
+      await ctx.send("**I don't have permissions to run this command!**")
+
+    if isinstance(error, commands.MissingPermissions):
+      await ctx.send("**You don't have permissions to run this command!**")
+
+    if isinstance(error, commands.NotOwner):
+      await ctx.send("**You can't do that, you're not the owner!**")
 
   
   @commands.Cog.listener()
@@ -57,10 +66,13 @@ class Astronomy(commands.Cog):
 
   @commands.command()
   async def listUniverse(self, ctx) -> object:
+    '''
+    Shows all topics available to see.
+    '''
     the_universe = discord.Embed(title="__**The Universe**__", description="The universe is big, and it is worth exploring and knowing more about it.", color=discord.Color.dark_purple(), timestamp=ctx.message.created_at)
     the_universe.set_author(name="The Big Bang", url=ctx.author.avatar_url)
 
-    the_universe.add_field(name="__**Available topics:**__", value=topics, inline=True)
+    the_universe.add_field(name="__**Available topics:**__", value=f"```{', '.join(topics)}```", inline=True)
     the_universe.set_image(url='https://cdn.discordapp.com/attachments/719020754858934294/719022762743824445/space2.png')
     the_universe.set_thumbnail(url='https://cdn.discordapp.com/attachments/719020754858934294/719022762743824445/space2.png')
     the_universe.set_footer(text=ctx.guild.name, icon_url=ctx.guild.icon_url)
@@ -68,8 +80,8 @@ class Astronomy(commands.Cog):
     return await ctx.send(embed=the_universe)
 
 
-  @commands.command()
-  async def whatIs(self, ctx, topic: str = None) -> object:
+  @commands.command(aliases=['wi', 'whatis', 'whats'])
+  async def whatIs(self, ctx, topic: str = None) -> None:
     '''
     Shows some information about the given topic.
     :param topic: The topic to show.
@@ -81,15 +93,14 @@ class Astronomy(commands.Cog):
       return await ctx.send(f"**{topic.title()} is not a topic that I cover!**")
 
     result = await self.read_topic(topic.title())
-    count = 0
-    if count == 0:
-      embed = discord.Embed(title=f"({topic.title()})",colour=discord.Colour.dark_purple(), timestamp=ctx.message.created_at)
-      embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
-      embed.add_field(name="__**Definition:**__", value=f"```{' '.join(result)}```", inline=False)
-      embed.set_thumbnail(url=image_links[topic.title()])
-      embed.set_image(url=image_links[topic.title()])
-      embed.set_footer(text=f"Requested by: {ctx.author.name}", icon_url=ctx.author.avatar_url)
-      await ctx.send(embed=embed)
+    links = image_links[topic.title()]
+    embed = discord.Embed(title=f"({topic.title()})",colour=discord.Colour.dark_purple(), timestamp=ctx.message.created_at, url=links[1])
+    embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
+    embed.add_field(name="__**Definition:**__", value=f"```{' '.join(result)}```", inline=False)
+    embed.set_thumbnail(url=links[0])
+    embed.set_image(url=links[0])
+    embed.set_footer(text=f"Requested by: {ctx.author.name}", icon_url=ctx.author.avatar_url)
+    await ctx.send(embed=embed)
 
 
   async def the_database(self):
@@ -114,8 +125,8 @@ class Astronomy(commands.Cog):
     
 
   # Database commands
-  @commands.command()
-  @commands.has_permissions(administrator=True)
+  @commands.command(hidden=True)
+  @commands.is_owner()
   async def create_table(self, ctx):
     if await self.table_exists():
       return await ctx.send("**Table __Universe__ already exists!**")
@@ -126,8 +137,8 @@ class Astronomy(commands.Cog):
     mycursor.close()
     return await ctx.send("**Table __Universe__ created!**")
 
-  @commands.command()
-  @commands.has_permissions(administrator=True)
+  @commands.command(hidden=True)
+  @commands.is_owner()
   async def drop_table(self, ctx):
     if not await self.table_exists():
       return await ctx.send("**Table __Universe__ doesn't exist!**")
@@ -138,8 +149,8 @@ class Astronomy(commands.Cog):
     mycursor.close()
     return await ctx.send("**Table __Universe__ dropped!**")
 
-  @commands.command()
-  @commands.has_permissions(administrator=True)
+  @commands.command(hidden=True)
+  @commands.is_owner()
   async def reset_table(self, ctx):
     if not await self.table_exists():
       return await ctx.send("**Table __Universe__ doesn't exist yet!**")
@@ -238,57 +249,6 @@ class Astronomy(commands.Cog):
     #embed.set_image(url='https://cdn.discordapp.com/attachments/719020754858934294/722519380914602145/mercury.png')
     #{user[0][1]} / {((user[0][2]+1)**5)}."
     return await ctx.send(embed=embed)
-
-
-  @commands.command()
-  @commands.has_permissions(add_reactions=True, embed_links=True)
-  async def help(self, ctx, co: str = None) -> object:
-    '''Provides a description of all commands and cogs.
-    :param co: Cog or command that you want to see. (Optional)'''
-    if not co:
-      halp=discord.Embed(title='Cog Listing and Uncatergorized Commands',
-                                description='```Use !help *cog* or help *command* to find out more about them!\n(BTW, the Cog Name Must Be in Title Case, Just Like this Sentence.)```', color=discord.Color.dark_purple(),timestamp=ctx.message.created_at)
-
-      cogs_desc = ''
-      for x in self.client.cogs:
-          if cog_doc := self.client.cogs[x].__doc__:
-            cogs_desc += (f"{x}\n")
-      halp.add_field(name='__Cogs__',value=cogs_desc[0:len(cogs_desc)-1],inline=False)
-
-      cmds_desc = ''
-      for y in self.client.walk_commands():
-          if not y.cog_name and not y.hidden:
-              if y.help:
-                cmds_desc += (f"{y.name} - `{y.help}`"+'\n')
-              else:
-                cmds_desc += (f"{y.name}"+'\n')
-      halp.add_field(name='__Uncatergorized Commands__',value=cmds_desc[0:len(cmds_desc)-1],inline=False)
-
-      await ctx.message.add_reaction(emoji='✉')
-      #return await ctx.send(embed=halp)
-      return await ctx.send('',embed=halp)
-
-
-    # Checks if it's a command
-    if command := self.client.get_command(co):
-      command_embed = discord.Embed(title=f"__Command:__ {command.name}", description=f"__**Description:**__\n```{command.help}```", color=discord.Color.dark_purple(), timestamp=ctx.message.created_at)
-      #print(command.__doc__)
-      await ctx.send(embed=command_embed)
-
-    # Checks if it's a cog
-    elif cog := self.client.get_cog(co):
-      cog_embed = discord.Embed(title=f"__Cog:__ {cog.qualified_name}", description=f"__**Description:**__\n```{cog.description}```", color=discord.Color.dark_purple(), timestamp=ctx.message.created_at)
-      #name = command.qualified_name
-      #print(command.description)
-      for c in cog.get_commands():
-          if not c.hidden:
-              cog_embed.add_field(name=c.name,value=c.help,inline=False)
-
-      await ctx.send(embed=cog_embed)
-
-    # Otherwise, it's an invalid parameter (Not found)
-    else:
-      await ctx.send(f"**Invalid parameter! `{co}` is neither a command nor a cog!**")
 
   @commands.command()
   async def source(self, ctx, command: str = None):
