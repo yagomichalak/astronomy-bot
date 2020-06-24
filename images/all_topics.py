@@ -27,7 +27,20 @@ image_links = {
   "Gravity":
   ["https://cdn.discordapp.com/attachments/719020754858934294/724640626167119942/gravity.png", "https://simple.wikipedia.org/wiki/Gravity"],
   "Dark_Matter":
-  ["https://cdn.discordapp.com/attachments/719020754858934294/724640790277783683/dark_matter.jpg", "https://simple.wikipedia.org/wiki/Dark_matter"]
+  ["https://cdn.discordapp.com/attachments/719020754858934294/724640790277783683/dark_matter.jpg", "https://simple.wikipedia.org/wiki/Dark_matter"],
+  "Artemis":
+  ["https://cdn.discordapp.com/attachments/719020754858934294/724784760219631660/artemis.png", "https://en.wikipedia.org/wiki/Artemis_program"],
+  'Sun': ["https://cdn.discordapp.com/attachments/719020754858934294/722525849282412564/sun.png", "https://en.wikipedia.org/wiki/Sun"],
+  'Mercury': ["https://cdn.discordapp.com/attachments/719020754858934294/722519380914602145/mercury.png", "https://en.wikipedia.org/wiki/Mercury_(planet)"],
+  'Venus': ["https://cdn.discordapp.com/attachments/719020754858934294/722530732907429988/venus.png", "https://en.wikipedia.org/wiki/Venus"],
+  'Earth': ["https://cdn.discordapp.com/attachments/719020754858934294/722530931986137148/earth.png", "https://en.wikipedia.org/wiki/Earth"],
+  'Mars': ["https://cdn.discordapp.com/attachments/719020754858934294/722535108510220368/mars.png", "https://en.wikipedia.org/wiki/Mars"],
+  'Jupiter': ["https://cdn.discordapp.com/attachments/719020754858934294/722535702381985852/jupiter.png", "https://en.wikipedia.org/wiki/Jupiter"],
+  'Saturn': ["https://cdn.discordapp.com/attachments/719020754858934294/722536981745369098/saturn.png", "https://en.wikipedia.org/wiki/Saturn"],
+  'Uranus': ["https://cdn.discordapp.com/attachments/719020754858934294/722537550400716941/uranus.png", "https://en.wikipedia.org/wiki/Uranus"],
+  'Neptune': ["https://cdn.discordapp.com/attachments/719020754858934294/722538262391947295/neptune.png", "https://en.wikipedia.org/wiki/Neptune"],
+  'Pluto': ["https://cdn.discordapp.com/attachments/719020754858934294/722560982647570562/pluto.png", "https://en.wikipedia.org/wiki/Pluto"],
+  'Alpha_Centauri': ["https://cdn.discordapp.com/attachments/719020754858934294/725155209193717931/alpha_centauri.jpg", "https://en.wikipedia.org/wiki/Alpha_Centauri"]
   }
 
 
