@@ -28,7 +28,13 @@ async def on_command_error(ctx, error):
     await ctx.send("**Bad argument!**")
 
   if isinstance(error, commands.CommandOnCooldown):
-    await ctx.send(error)
+    secs = error.retry_after
+    print(error.retry_after)
+    if int(secs) >= 60:
+      await ctx.send(f"You are on cooldown! Try again in {secs/60:.1f} minutes!")
+    else:
+      await ctx.send(error)
+      
 
   if isinstance(error, commands.NotOwner):
     await ctx.send("**You can't do that, you're not the owner!**")
@@ -54,11 +60,11 @@ async def ping(ctx):
 @commands.cooldown(1, 10, type=commands.BucketType.guild)
 async def info(ctx):
     '''
-    Shows your astro-profile
+    Shows some information about the bot itself.
     '''
     embed = discord.Embed(title='Artemis Bot', description="__**WHAT IS IT?:**__```Hello, the Artemis Bot is an open source bot based on astronomy, which its only purpose is to portray information about the universe.```", colour=discord.Colour.dark_purple(), url="https://discord.gg/8Bemp2a", timestamp=ctx.message.created_at)
     embed.add_field(name="📚 __**Topics**__",
-                    value="More than 15 topics to explore.",
+                    value="More than 25 topics to explore.",
                     inline=False)
     embed.add_field(name="💻 __**Programmed in**__",
                     value="The Artemis bot was built in Python, and you can find its GitHub repository [here](https://github.com/yagomichalak/astronomy-bot)",
@@ -71,6 +77,14 @@ async def info(ctx):
     embed.set_author(name='DNK#6725', url='https://discord.gg/7DyWxSt',
                      icon_url='https://cdn.discordapp.com/attachments/719020754858934294/720289112040669284/DNK_icon.png')
     await ctx.send(embed=embed)
+
+@client.command()
+async def invite(ctx):
+  '''
+  Sends the bot's invite.
+  '''
+  invite = 'https://discord.com/oauth2/authorize?client_id=723699955008798752&permissions=126016&scope=bot'
+  await ctx.send(f"Here's my invite:\n{invite}")
 
 @client.command()
 @commands.has_permissions(add_reactions=True, embed_links=True)

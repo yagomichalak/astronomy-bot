@@ -41,7 +41,7 @@ class Astronomy(commands.Cog):
       return lines
 
 
-  @commands.command()
+  @commands.command(aliases=['lu', 'listuniverse', 'topics'])
   async def listUniverse(self, ctx) -> object:
     '''
     Shows all topics available to see.
@@ -49,7 +49,7 @@ class Astronomy(commands.Cog):
     the_universe = discord.Embed(title="__**The Universe**__", description="The universe is big, and it is worth exploring and knowing more about it.", color=discord.Color.dark_purple(), timestamp=ctx.message.created_at)
     the_universe.set_author(name="The Big Bang", url=ctx.author.avatar_url)
 
-    the_universe.add_field(name="__**Available topics:**__", value=f"```{', '.join(topics)}```", inline=True)
+    the_universe.add_field(name="__**Available topics:**__", value=f"```{', '.join(sorted(topics))}```", inline=True)
     the_universe.set_image(url='https://cdn.discordapp.com/attachments/719020754858934294/719022762743824445/space2.png')
     the_universe.set_thumbnail(url='https://cdn.discordapp.com/attachments/719020754858934294/719022762743824445/space2.png')
     the_universe.set_footer(text=ctx.guild.name, icon_url=ctx.guild.icon_url)
