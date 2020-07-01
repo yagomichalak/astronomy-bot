@@ -269,6 +269,38 @@ class Astronomy(commands.Cog):
         has_planet = [level, f"Asteroid {level}"]
     return has_planet
 
+  @commands.command(aliases=['scoreboard', 'sb', 'rank', 'ranking'])
+  async def score(self, ctx):
+    '''
+    Shows the global scoreboard, regarding the experience points.
+    '''
+    users = await self.get_top_ten()
+    spec_user = await self.get_user(ctx.author.id)
+    print(spec_user)
+    scoreboard = discord.Embed(
+      title='__**Astronomical Scoreboard**__',
+      description='Top ten people in the world with more XP.',
+      color=self.client.user.color,
+      timestamp=ctx.message.created_at
+      )
+    scoreboard.set_thumbnail(url=ctx.guild.icon_url)
+    print('p')
+    scoreboard.set_footer(text=f"You: {spec_user[0][2]} XP", icon_url=ctx.author.avatar_url)
+
+    print('k')
+    for i, user in enumerate(users):
+      member = self.client.get_user(user[0])
+      scoreboard.add_field(name=f"{i+1} - __{member}__", value=f"`{user[2]}` XP", inline=False)
+    await ctx.send(embed=scoreboard)
+    #await ctx.send(users)
+
+  async def get_top_ten(self):
+    mycursor, db = await self.the_database()
+    mycursor.execute('SELECT * FROM Universe ORDER BY user_xp DESC limit 10')
+    users = mycursor.fetchall()
+    mycursor.close()
+    return users
+  
 
 def setup(client):
   #client.add_command(help)
