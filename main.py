@@ -42,6 +42,17 @@ async def on_command_error(ctx, error):
   if isinstance(error, commands.MissingRequiredArgument):
     await ctx.send('**Make sure to inform all parameters!**')
 
+@client.event
+async def on_guild_join(guild):
+  general = guild.system_channel
+  if general and general.permissions_for(guild.me).send_messages:
+    embed = discord.Embed(
+      title="Hello world!",
+      description=f"Another glitch in the matrix has been done, and that's the **Earth {len(client.guilds)}**, AKA **{guild.name}**!",
+      color=client.user.color
+      )
+    await general.send(embed=embed)
+
 
 @tasks.loop(seconds=10)
 async def in_servers():
