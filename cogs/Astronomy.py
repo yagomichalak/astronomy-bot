@@ -183,7 +183,8 @@ class Astronomy(commands.Cog):
     lvl_end = int(the_user[0][2] ** (1 / 5))
     if the_user[0][1] < lvl_end:
         await self.update_user_lvl(user.id, the_user[0][1] + 1)
-        return await channel.send(f"**{user.mention} has leveled up to lvl {the_user[0][1] + 1}!**")
+        astro = await self.get_astro(the_user[0][1] + 1, galaxy)
+        return await channel.send(f"**{user.mention} has leveled up to `{astro[0]}`!**")
 
   async def update_user_lvl(self, user_id: int, user_lvl: int):
     mycursor, db = await self.the_database()
