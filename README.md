@@ -4,9 +4,11 @@ A simple informative Discord bot.
 
 
 # Features
-- More than 50 topics to explore (WIP)
+- More than 25 topics to explore (WIP)
 
-- Global level ranking system, universe themed (WIP)
+- Global level ranking system, universe themed.
+
+- Minigames.
 
 # Quick Note
 

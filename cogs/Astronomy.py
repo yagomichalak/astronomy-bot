@@ -72,7 +72,7 @@ class Astronomy(commands.Cog):
       return await ctx.send("**Please, inform a topic!**")
     
     if not topic.title() in topics:
-      return await ctx.send(f"**{topic.title()} is not a topic that I cover!**")
+      return await ctx.send(f"**`{topic.title()}` is not a topic that I cover!**")
 
     result = await self.read_topic(topic.title())
     links = image_links[topic.title()]
@@ -410,6 +410,7 @@ class Astronomy(commands.Cog):
       return True
     else:
       return False
+
 
 def setup(client):
   #client.add_command(help)

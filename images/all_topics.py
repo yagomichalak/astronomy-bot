@@ -61,4 +61,10 @@ alpha_centauri = {'Alpha Centauri A': ["https://cdn.discordapp.com/attachments/7
 
 galaxy = [sun, alpha_centauri]
 
-
+quizzes = {
+'moon': 'Most planets have at least one of this orbiting around.',
+'black hole': "What comes in, never goes out.",
+'sun': "Hot, hot, hot... It loves to be the center everything!.",
+'elon musk': "He is a billionaire entrepreneur, philanthropist and visionary South-African-Canadian-American. Founder, CEO and CTO of SpaceX.",
+'Asteroid': 'Something fell from the sky and... R.I.P my fellow dinosaurs!'
+}
