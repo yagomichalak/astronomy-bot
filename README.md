@@ -8,7 +8,8 @@ A simple informative Discord bot.
 
 - Global level ranking system, universe themed.
 
-- Minigames.
+- Minigames;
+  - quiz, space_traveling.
 
 # Quick Note
 
