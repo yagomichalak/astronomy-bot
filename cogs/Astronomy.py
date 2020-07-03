@@ -27,6 +27,11 @@ class Astronomy(commands.Cog):
     if not await self.table_exists():
       return
 
+    if not await self.table_blocked_guilds_exists():
+      return
+    if await self.disabled_server(message.guild.id):
+      return
+
     epoch = datetime.utcfromtimestamp(0)
     time_xp = (datetime.utcnow() - epoch).total_seconds()
 
@@ -277,7 +282,6 @@ class Astronomy(commands.Cog):
     '''
     users = await self.get_top_ten()
     spec_user = await self.get_user(ctx.author.id)
-    print(spec_user)
     scoreboard = discord.Embed(
       title='__**Astronomical Scoreboard**__',
       description='Top ten people in the world with more XP.',
@@ -285,10 +289,8 @@ class Astronomy(commands.Cog):
       timestamp=ctx.message.created_at
       )
     scoreboard.set_thumbnail(url=ctx.guild.icon_url)
-    print('p')
     scoreboard.set_footer(text=f"You: {spec_user[0][2]} XP", icon_url=ctx.author.avatar_url)
 
-    print('k')
     for i, user in enumerate(users):
       member = self.client.get_user(user[0])
       scoreboard.add_field(name=f"{i+1} - __{member}__", value=f"`{user[2]}` XP", inline=False)
@@ -301,7 +303,113 @@ class Astronomy(commands.Cog):
     users = mycursor.fetchall()
     mycursor.close()
     return users
+
+  @commands.command()
+  @commands.has_permissions(administrator=True)
+  async def enable_levels(self, ctx):
+    '''
+    Enables the leveling up system for a specific server.
+    '''
+    if not await self.table_blocked_guilds_exists():
+      return await ctx.send("**This feature is on maintenance!**")
+
+    if await self.disabled_server(ctx.guild.id):
+      await self.remove_disabled_server(ctx.guild.id)
+      await ctx.send("**Levels enabled again for this server!**")
+    else:
+      await ctx.send("**Levels are already enabled for this server!**")
+
+  @commands.command()
+  @commands.has_permissions(administrator=True)
+  async def disable_levels(self, ctx):
+    '''
+    Disables the leveling up system for a specific server.
+    '''
+    if not await self.table_blocked_guilds_exists():
+      return await ctx.send("**This feature is on maintenance!**")
+    if not await self.disabled_server(ctx.guild.id):
+      await self.insert_disabled_server(ctx.guild.id)
+      await ctx.send("**Levels disabled for this server!**")
+    else:
+      await ctx.send("**Levels are already disabled for this server!**")
   
+  # Database commands
+  @commands.command(hidden=True)
+  @commands.is_owner()
+  async def create_table_blocked_guilds(self, ctx):
+    '''
+    Creates the BlockedGuilds table.
+    '''
+    if await self.table_blocked_guilds_exists():
+      return await ctx.send("**Table __BlockedGuilds__ already exists!**")
+    
+    mycursor, db = await self.the_database()
+    mycursor.execute("CREATE TABLE BlockedGuilds (guild_id INTEGER NOT NULL)")
+    db.commit()
+    mycursor.close()
+    return await ctx.send("**Table __BlockedGuilds__ created!**")
+
+  @commands.command(hidden=True)
+  @commands.is_owner()
+  async def drop_table_blocked_guilds(self, ctx):
+    '''
+    Drops the BlockedGuilds table.
+    '''
+    if not await self.table_blocked_guilds_exists():
+      return await ctx.send("**Table __BlockedGuilds__ doesn't exist!**")
+    
+    mycursor, db = await self.the_database()
+    mycursor.execute("DROP TABLE BlockedGuilds")
+    db.commit()
+    mycursor.close()
+    return await ctx.send("**Table __BlockedGuilds__ dropped!**")
+
+  @commands.command(hidden=True)
+  @commands.is_owner()
+  async def reset_table_blocked_guilds(self, ctx):
+    '''
+    Resets the BlockedGuilds table.
+    '''
+    if not await self.table_blocked_guilds_exists():
+      return await ctx.send("**Table __BlockedGuilds__ doesn't exist yet!**")
+    
+    mycursor, db = await self.the_database()
+    mycursor.execute("DELETE FROM BlockedGuilds")
+    db.commit()
+    mycursor.close()
+    return await ctx.send("**Table __BlockedGuilds__ reset!**")
+
+  async def table_blocked_guilds_exists(self):
+    mycursor, db = await self.the_database()
+    mycursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='BlockedGuilds'")
+    table_info = mycursor.fetchall()
+    mycursor.close()
+    if len(table_info) == 0:
+        return False
+    else:
+        return True
+
+  async def insert_disabled_server(self, gid: int):
+    mycursor, db = await self.the_database()
+    mycursor.execute(f"INSERT INTO BlockedGuilds (guild_id) VALUES ({gid})")
+    db.commit()
+    mycursor.close()
+  
+  async def remove_disabled_server(self, gid: int):
+    mycursor, db = await self.the_database()
+    mycursor.execute(f"DELETE FROM BlockedGuilds WHERE guild_id = {gid}")
+    db.commit()
+    mycursor.close()
+
+  async def disabled_server(self, gid: int):
+    mycursor, db = await self.the_database()
+    mycursor.execute(f"SELECT * FROM BlockedGuilds WHERE guild_id = {gid}")
+    the_guild = mycursor.fetchall()
+    mycursor.close()
+    if len(the_guild) > 0:
+      return True
+    else:
+      return False
 
 def setup(client):
   #client.add_command(help)
