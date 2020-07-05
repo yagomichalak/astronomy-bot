@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import asyncio
 import random
-from images.all_topics import quizzes
+from images.qa import quizzes
 
 class MiniGame(commands.Cog):
   '''

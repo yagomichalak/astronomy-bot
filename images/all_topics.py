@@ -60,36 +60,3 @@ sun = {
 alpha_centauri = {'Alpha Centauri A': ["https://cdn.discordapp.com/attachments/719020754858934294/723695059115049040/alpha_centauri_a.jpg", "https://en.wikipedia.org/wiki/Alpha_Centauri#Alpha_Centauri_A"], 'Alpha Centauri B': ["https://cdn.discordapp.com/attachments/719020754858934294/723695088848470026/alpha_centauri_b.jpg", "https://en.wikipedia.org/wiki/Alpha_Centauri#Alpha_Centauri_B"], 'Proxima Centauri': ["https://cdn.discordapp.com/attachments/719020754858934294/723695181748240404/proxima_centauri.jpg", "https://en.wikipedia.org/wiki/Alpha_Centauri#Alpha_Centauri_C_(Proxima_Centauri)"]}
 
 galaxy = [sun, alpha_centauri]
-
-quizzes = {
-'moon': 'Most planets have at least one of this orbiting around.',
-'black hole': "What comes in, never goes out.",
-'sun': "Hot, hot, hot... It loves to be the center everything!.",
-'elon musk': "He is a billionaire entrepreneur, philanthropist and visionary South-African-Canadian-American. Founder, CEO and CTO of SpaceX.",
-'asteroid': 'Something fell from the sky and... R.I.P my fellow dinosaurs!',
-"milky way": "Which galaxy is home to the Solar system?",
-"pluto": "Which object lost its status as a planet in 2006?",
-"a hypothetical reservoir for comets": "What is the Oort cloud?",
-"venus": "What is the third brightest astronomical object in the sky?",
-"2": "How many moons does Mars have?",
-"galileo galilei": "Who discovered the four main moons of Jupiter in 1610?",
-"polarity reverse of the sun": "What is the Solar Cycle?",
-"a unit of measurement used to describe the expansion of the universe": "What is the Hubble constant?",
-"helium": "Hydrogen and which other gas make up the majority of the Suns composition?",
-"proxima centauri": "Which star is closest to the Sun?",
-"asteroid": "Vesta is which type of heavenly body?",
-"encke": "The comet with the shortest orbital period of 3.3 years is named what?",
-"jupiter": "Which planet has the largest moon in the Solar system?",
-"a highly magnetised rotating neutron star": "What is a pulsar?",
-"4": "How many terrestrial planets are there in the Solar system?",
-"88": "How many named constellations are there?",
-"olympus mons": "What is the name of the largest volcano in the Solar system?",
-"vega, deneb, altair": "Which three stars make the Summer Triangle?",
-"eugene cernan": "Who was the last man on the Moon?",
-"a powerful star explosion": "What is a supernova?",
-"a measure of distance": "What is an astronomical unit?",
-"a massive release of plasma from the sun": "What is a Coronal Mass Ejection?",
-"2": "How many Ice giants are in the Solar system?",
-"76 years": "What is the orbital period of Halley’s comet?",
-"42km/s": "25 What is the escape velocity from the Solar system at the distance of Earth?"
-}

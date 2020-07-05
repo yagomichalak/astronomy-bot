@@ -75,7 +75,7 @@ async def info(ctx):
     '''
     Shows some information about the bot itself.
     '''
-    embed = discord.Embed(title='Artemis Bot', description="__**WHAT IS IT?:**__```Hello, the Artemis Bot is an open source bot based on astronomy, which its only purpose is to portray information about the universe.```", colour=discord.Colour.dark_purple(), url="https://discord.gg/8Bemp2a", timestamp=ctx.message.created_at)
+    embed = discord.Embed(title='Artemis Bot', description="__**WHAT IS IT?:**__```Hello, the Artemis Bot is an open source bot based on astronomy, which its only purpose is to portray information about the universe.```", colour=discord.Colour.dark_purple(), url="https://theartemisbot.herokuapp.com/info", timestamp=ctx.message.created_at)
     embed.add_field(name="📚 __**Topics**__",
                     value="More than 25 topics to explore.",
                     inline=False)
