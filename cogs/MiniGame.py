@@ -36,7 +36,7 @@ class MiniGame(commands.Cog):
   async def space_traveling(self, ctx):
 
     def check(reaction, user):
-        return user == ctx.author and str(reaction.emoji) in '1️⃣2️⃣'
+        return user == ctx.author and reaction.message.channel == ctx.channel and reaction.message.id == msg.id and str(reaction.emoji) in '1️⃣2️⃣'
     msg = await ctx.send(embed=discord.Embed(title='🎮'))
     await self.make_embed(ctx, msg, '''You started your journey in space and right after that you see two paths.
 
@@ -160,7 +160,7 @@ Would you like to go **left** or **right**?''')
         await quiz_msg.add_reaction('🔄')
 
       try:
-        reaction, user = await self.client.wait_for('reaction_add', timeout=30.0, check=lambda r, u: u == ctx.author and r.message.channel == ctx.channel and str(r.emoji) == '🔄')
+        reaction, user = await self.client.wait_for('reaction_add', timeout=30.0, check=lambda r, u: u == ctx.author and r.message.channel == ctx.channel and r.message.id == quiz_msg.id and str(r.emoji) == '🔄')
       except asyncio.TimeoutError:
         await quiz_msg.remove_reaction('🔄', self.client.user)
         quiz_embed.set_footer(text='Try again')
