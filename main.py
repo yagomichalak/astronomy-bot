@@ -6,6 +6,7 @@ import os
 client = commands.Bot(command_prefix='o!')
 client.remove_command('help')
 token = os.getenv('TOKEN')
+on_guild_log_id = os.getenv('ON_GUILD_LOG_ID')
 
 @client.event
 async def on_ready():
@@ -47,13 +48,21 @@ async def on_command_error(ctx, error):
 @client.event
 async def on_guild_join(guild):
   general = guild.system_channel
-  if general and general.permissions_for(guild.me).send_messages:
-    embed = discord.Embed(
+  embed = discord.Embed(
       title="Hello world!",
       description=f"Another glitch in the matrix has been spotted, and that's the **Earth {len(client.guilds)}**, AKA **{guild.name}**!",
       color=client.user.color
       )
+
+  # Sends an embedded message in the new server
+  if general and general.permissions_for(guild.me).send_messages:
     await general.send(embed=embed)
+
+  #Logs it in the bot's support server on_guild log
+  guild_log = client.get_channel(int(on_guild_log_id))
+  if guild_log:
+    await guild_log.send(embed=embed)
+  
 
 
 @tasks.loop(seconds=10)

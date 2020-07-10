@@ -411,7 +411,6 @@ class Astronomy(commands.Cog):
     else:
       return False
 
-
 def setup(client):
   #client.add_command(help)
   client.add_cog(Astronomy(client))
