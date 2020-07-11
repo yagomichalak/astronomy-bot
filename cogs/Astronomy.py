@@ -27,11 +27,6 @@ class Astronomy(commands.Cog):
     if not await self.table_exists():
       return
 
-    if not await self.table_blocked_guilds_exists():
-      return
-    if await self.disabled_server(message.guild.id):
-      return
-
     epoch = datetime.utcfromtimestamp(0)
     time_xp = (datetime.utcnow() - epoch).total_seconds()
 
@@ -189,6 +184,8 @@ class Astronomy(commands.Cog):
     if the_user[0][1] < lvl_end:
         await self.update_user_lvl(user.id, the_user[0][1] + 1)
         astro = await self.get_astro(the_user[0][1] + 1, galaxy)
+        if await self.disabled_server(channel.guild.id):
+          return
         return await channel.send(f"**{user.mention} has leveled up to `{astro[0]}`!**")
 
   async def update_user_lvl(self, user_id: int, user_lvl: int):
@@ -308,7 +305,7 @@ class Astronomy(commands.Cog):
   @commands.has_permissions(administrator=True)
   async def enable_levels(self, ctx):
     '''
-    Enables the leveling up system for a specific server.
+    Enables leveling up messages for a specific server.
     '''
     if not await self.table_blocked_guilds_exists():
       return await ctx.send("**This feature is on maintenance!**")
@@ -323,7 +320,7 @@ class Astronomy(commands.Cog):
   @commands.has_permissions(administrator=True)
   async def disable_levels(self, ctx):
     '''
-    Disables the leveling up system for a specific server.
+    Disables leveling up messages for a specific server.
     '''
     if not await self.table_blocked_guilds_exists():
       return await ctx.send("**This feature is on maintenance!**")
