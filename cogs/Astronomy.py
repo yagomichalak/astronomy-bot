@@ -5,6 +5,7 @@ from images.all_topics import topics, image_links, galaxy
 import textwrap
 import sqlite3
 from datetime import datetime
+import random
 
 class Astronomy(commands.Cog):
   '''
@@ -407,6 +408,14 @@ class Astronomy(commands.Cog):
       return True
     else:
       return False
+
+  @commands.command()
+  async def random(self, ctx):
+    '''
+    Fetches a random topic from the system.
+    '''
+    topic = random.choice(list(image_links))
+    await self.whatIs(ctx, topic)
 
 def setup(client):
   #client.add_command(help)
