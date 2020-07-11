@@ -28,5 +28,16 @@ quizzes = {
 "a massive release of plasma from the sun": "What is a Coronal Mass Ejection?",
 "2": "How many Ice giants are in the Solar system?",
 "76 years": "What is the orbital period of Halley’s comet?",
-"42km/s": "What is the escape velocity from the Solar system at the distance of Earth?"
+"42km/s": "What is the escape velocity from the Solar system at the distance of Earth?",
+"8": "How many planets there are in the Solar system?",
+"hans lippershey": "Telescopes have significantly changed over time. Do you know who invented the first telescope though?",
+"4": "How many planets with rings are there in our solar system?",
+"180": "Approximately, how many moons are there in our solar system?",
+"usually more expensive than reflecting telescopes": "Refractor telescopes are __",
+"they could differentiate the planets from stars": "Before the first telescope was invented what were ancient astronomers able to learn about planets?",
+"1975, venera 9": "When and which spacecraft did first send back surface images from a planet in our solar system?",
+"venus": "Which was the first planet to be explored by a space probe?",
+"606 days": "How long did it take for Pioneer 11 to reach Jupiter?",
+"norton’s star atlas": "Which astronomy book for beginners was written by Ian Ridpath?",
+"arthur c. clarke": "Who is the author of this famous quote: “I’m sure the universe is full of intelligent life. It’s just been too intelligent to come here.”"
 }

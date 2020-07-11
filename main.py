@@ -22,8 +22,9 @@ async def on_command_error(ctx, error):
   if isinstance(error, commands.BotMissingPermissions):
     await ctx.send("**I don't have permissions to run this command!**")
 
-  if isinstance(error, commands.CommandNotFound):
-    await ctx.send(f"**There's no such command as `{ctx.message.content.split()[0]}`!**")
+  # Tells that the command doesn't exist
+  # if isinstance(error, commands.CommandNotFound):
+  #   await ctx.send(f"**There's no such command as `{ctx.message.content.split()[0]}`!**")
 
   if isinstance(error, commands.BadArgument):
     await ctx.send("**Bad argument!**")
