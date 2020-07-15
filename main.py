@@ -62,8 +62,21 @@ async def on_guild_join(guild):
   #Logs it in the bot's support server on_guild log
   guild_log = client.get_channel(int(on_guild_log_id))
   if guild_log:
+    embed.set_thumbnail(url=guild.icon_url)
     await guild_log.send(embed=embed)
   
+
+@client.event
+async def on_guild_remove(guild):
+  embed = discord.Embed(title="Goodbye world!",
+      description=f"We lost contact with the **Earth {len(client.guilds)+1}**, AKA **{guild.name}**!",
+      color=discord.Color.red()
+      )
+  embed.set_thumbnail(url=guild.icon_url)
+  #Logs it in the bot's support server on_guild log
+  guild_log = client.get_channel(int(on_guild_log_id))
+  if guild_log:
+    await guild_log.send(embed=embed)
 
 
 @tasks.loop(seconds=10)
@@ -116,7 +129,7 @@ async def help(ctx, co: str = None) -> object:
   :param co: Cog or command that you want to see. (Optional)'''
   if not co:
     halp=discord.Embed(title='Cog Listing and Uncategorized Commands',
-                              description='```Use o!help *cog* or help *command* to find out more about them!\n(BTW, the Cog Name Must Be in Title Case, Just Like this Sentence.)```', color=discord.Color.dark_purple(),timestamp=ctx.message.created_at)
+                              description='```Use o!help *cog* or help *command* to find out more about them!\n(BTW, the Cog Name Must Be in Title Case, Just Like this Sentence.)\nExample: o!help Astronomy```', color=discord.Color.dark_purple(),timestamp=ctx.message.created_at)
 
     cogs_desc = []
     for x in client.cogs:
@@ -157,6 +170,19 @@ async def help(ctx, co: str = None) -> object:
   # Otherwise, it's an invalid parameter (Not found)
   else:
     await ctx.send(f"**Invalid parameter! `{co}` is neither a command nor a cog!**")
+
+@client.command()
+async def vote(ctx):
+  '''
+  Shows all bot lists where you can vote for the bot on.
+  '''
+  bpd = 'https://botsparadiscord.com/bots/723699955008798752'
+  glen = 'https://glennbotlist.xyz/bot/723699955008798752/vote'
+  embed = discord.Embed(title="__Vote on me!__",
+  description=f"Click on any of these names to vote, respectively:\n[Bots Para Discord]({bpd}), [Glenn Bot List]({glen})."
+  )
+  embed.set_thumbnail(url=client.user.avatar_url)
+  await ctx.send(embed=embed)
 
 @client.command(hidden=True)
 @commands.is_owner()

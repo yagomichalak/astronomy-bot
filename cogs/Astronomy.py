@@ -6,6 +6,7 @@ import textwrap
 import sqlite3
 from datetime import datetime
 import random
+from images.agencies import space_agencies
 
 class Astronomy(commands.Cog):
   '''
@@ -416,6 +417,68 @@ class Astronomy(commands.Cog):
     '''
     topic = random.choice(list(image_links))
     await self.whatIs(ctx, topic)
+
+  @commands.command()
+  @commands.cooldown(1, 60, type=commands.BucketType.user)
+  async def agency(self, ctx):
+    '''
+    Shows all space agencies. (WIP)
+    '''
+    embed = discord.Embed(title="__Space Agencies__",
+    description='Some space agencies in the world.',
+    color=ctx.author.color,
+    timestamp=ctx.message.created_at,
+    url='https://en.wikipedia.org/wiki/List_of_government_space_agencies#List_of_space_agencies'
+    )
+
+    msg = await ctx.send(embed=embed)
+
+    def check(reaction, user):
+      return str(reaction.message.channel) == str(msg.channel) and user == ctx.author and str(reaction.emoji) in ['⬅️', '➡️']
+
+
+    await msg.add_reaction('⬅️')
+    await msg.add_reaction('➡️')
+    lensa = len(list(space_agencies))
+    index = 0
+    while True:
+      for i in range(6):
+        #print(i)
+        try:
+          key = list(space_agencies)[index + i]
+          value = space_agencies[key]
+        except IndexError:
+          break
+        else:
+          #print(f"key {key}")
+          website = f"[Website]({value[5]})" if value[5] else ''
+          embed.add_field(
+            name=f"{value[0]} {key} ({value[4]})", 
+            value=f"{value[2]} ([{value[1]}]({value[3]})). {website}", 
+            inline=True)
+          embed.set_footer(text=f"({index+1} - {index+1+i})")
+
+      await msg.edit(embed=embed)
+      embed.clear_fields()
+      try:
+        reaction, user = await self.client.wait_for('reaction_add', timeout=60, check=check)
+        #print(reaction, user)
+      except asyncio.TimeoutError:
+        await msg.remove_reaction('⬅️', self.client.user)
+        await msg.remove_reaction('➡️', self.client.user)
+      else:
+        print(index)
+        print(lensa)
+        if str(reaction.emoji) == "➡️":
+            await msg.remove_reaction(reaction.emoji, user)
+            if index + 6 < lensa:
+                index += 6
+            continue
+        elif str(reaction.emoji) == "⬅️":
+            await msg.remove_reaction(reaction.emoji, user)
+            if index > 0:
+                index -= 6
+            continue
 
 def setup(client):
   #client.add_command(help)
