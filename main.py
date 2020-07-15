@@ -176,10 +176,15 @@ async def vote(ctx):
   '''
   Shows all bot lists where you can vote for the bot on.
   '''
-  bpd = 'https://botsparadiscord.com/bots/723699955008798752'
-  glen = 'https://glennbotlist.xyz/bot/723699955008798752/vote'
+  botlists = [
+  ['Bots Para Discord', 'https://botsparadiscord.com/bots/723699955008798752'],
+  ['Glenn Bot List', 'https://glennbotlist.xyz/bot/723699955008798752/vote'],
+  ['Discord Bot List', 'https://discordbotlist.com/bots/artemis/upvote'],
+  ['Quality Bot List', 'https://www.qualitybotlist.ml/vote/723699955008798752'],
+  ]
+  truelist = [f"[{bl[0]}]({bl[1]})" for bl in botlists]
   embed = discord.Embed(title="__Vote on me!__",
-  description=f"Click on any of these names to vote, respectively:\n[Bots Para Discord]({bpd}), [Glenn Bot List]({glen})."
+  description=f"Click on any of these names to vote, respectively:\n{', '.join(truelist)}."
   )
   embed.set_thumbnail(url=client.user.avatar_url)
   await ctx.send(embed=embed)
