@@ -7,6 +7,7 @@ import sqlite3
 from datetime import datetime
 import random
 from images.agencies import space_agencies
+import asyncio
 
 class Astronomy(commands.Cog):
   '''
@@ -422,7 +423,7 @@ class Astronomy(commands.Cog):
   @commands.cooldown(1, 60, type=commands.BucketType.user)
   async def agency(self, ctx):
     '''
-    Shows all space agencies. (WIP)
+    Shows all space agencies in the world.
     '''
     embed = discord.Embed(title="__Space Agencies__",
     description='Some space agencies in the world.',
@@ -432,6 +433,7 @@ class Astronomy(commands.Cog):
     )
 
     msg = await ctx.send(embed=embed)
+    await asyncio.sleep(0.5)
 
     def check(reaction, user):
       return str(reaction.message.channel) == str(msg.channel) and user == ctx.author and str(reaction.emoji) in ['⬅️', '➡️']
@@ -456,19 +458,17 @@ class Astronomy(commands.Cog):
             name=f"{value[0]} {key} ({value[4]})", 
             value=f"{value[2]} ([{value[1]}]({value[3]})). {website}", 
             inline=True)
-          embed.set_footer(text=f"({index+1} - {index+1+i})")
+          embed.set_footer(text=f"({index+1} - {index+1+i}) of {lensa}")
 
       await msg.edit(embed=embed)
       embed.clear_fields()
       try:
         reaction, user = await self.client.wait_for('reaction_add', timeout=60, check=check)
-        #print(reaction, user)
       except asyncio.TimeoutError:
         await msg.remove_reaction('⬅️', self.client.user)
         await msg.remove_reaction('➡️', self.client.user)
+        break
       else:
-        print(index)
-        print(lensa)
         if str(reaction.emoji) == "➡️":
             await msg.remove_reaction(reaction.emoji, user)
             if index + 6 < lensa:
