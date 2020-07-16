@@ -420,65 +420,82 @@ class Astronomy(commands.Cog):
     await self.whatIs(ctx, topic)
 
   @commands.command()
-  @commands.cooldown(1, 60, type=commands.BucketType.user)
-  async def agency(self, ctx):
+  @commands.cooldown(1, 5, type=commands.BucketType.user)
+  async def agency(self, ctx, *, country: str = None):
     '''
-    Shows all space agencies in the world.
+    Shows all space agencies in the world or a specific one.
+    :param country: The country of that agency.
     '''
-    embed = discord.Embed(title="__Space Agencies__",
-    description='Some space agencies in the world.',
-    color=ctx.author.color,
-    timestamp=ctx.message.created_at,
-    url='https://en.wikipedia.org/wiki/List_of_government_space_agencies#List_of_space_agencies'
-    )
+    if country:
+      try:
+        ca = space_agencies[country.title()]
+      except KeyError:
+        await ctx.send(f"**{ctx.author.mention}, '`{country}`' is either not a country or doesn't have a space agency!**")
+      else:
+        website = f"[Yes!]({ca[5]})" if ca[5] else 'No!'
+        embed = discord.Embed(
+          title=f"{ca[0]} __{country.title()}'s Space Agency__", description=f"**Acronym**: [{ca[1]}]({ca[3]})\n**Meaning**: {ca[2]}\n**Website?** {website}",
+          timestamp=ctx.message.created_at,
+          color=ctx.author.color
+          )
+        embed.set_footer(text=f"Requested by: {ctx.author}", icon_url=ctx.author.avatar_url)
+        await ctx.send(embed=embed)
 
-    msg = await ctx.send(embed=embed)
-    await asyncio.sleep(0.5)
+    else:
+      embed = discord.Embed(title="__Space Agencies__",
+      description='All space agencies in the world.',
+      color=ctx.author.color,
+      timestamp=ctx.message.created_at,
+      url='https://en.wikipedia.org/wiki/List_of_government_space_agencies#List_of_space_agencies'
+      )
 
-    def check(reaction, user):
-      return str(reaction.message.channel) == str(msg.channel) and user == ctx.author and str(reaction.emoji) in ['⬅️', '➡️']
+      msg = await ctx.send(embed=embed)
+      await asyncio.sleep(0.5)
+
+      def check(reaction, user):
+        return str(reaction.message.channel) == str(msg.channel) and user == ctx.author and str(reaction.emoji) in ['⬅️', '➡️']
 
 
-    await msg.add_reaction('⬅️')
-    await msg.add_reaction('➡️')
-    lensa = len(list(space_agencies))
-    index = 0
-    while True:
-      for i in range(6):
-        #print(i)
+      await msg.add_reaction('⬅️')
+      await msg.add_reaction('➡️')
+      lensa = len(list(space_agencies))
+      index = 0
+      while True:
+        for i in range(6):
+          #print(i)
+          try:
+            key = list(space_agencies)[index + i]
+            value = space_agencies[key]
+          except IndexError:
+            break
+          else:
+            #print(f"key {key}")
+            website = f"[Website]({value[5]})" if value[5] else ''
+            embed.add_field(
+              name=f"{value[0]} {key} ({value[4]})", 
+              value=f"{value[2]} ([{value[1]}]({value[3]})). {website}", 
+              inline=True)
+            embed.set_footer(text=f"({index+1} - {index+1+i}) of {lensa}")
+
+        await msg.edit(embed=embed)
+        embed.clear_fields()
         try:
-          key = list(space_agencies)[index + i]
-          value = space_agencies[key]
-        except IndexError:
+          reaction, user = await self.client.wait_for('reaction_add', timeout=60, check=check)
+        except asyncio.TimeoutError:
+          await msg.remove_reaction('⬅️', self.client.user)
+          await msg.remove_reaction('➡️', self.client.user)
           break
         else:
-          #print(f"key {key}")
-          website = f"[Website]({value[5]})" if value[5] else ''
-          embed.add_field(
-            name=f"{value[0]} {key} ({value[4]})", 
-            value=f"{value[2]} ([{value[1]}]({value[3]})). {website}", 
-            inline=True)
-          embed.set_footer(text=f"({index+1} - {index+1+i}) of {lensa}")
-
-      await msg.edit(embed=embed)
-      embed.clear_fields()
-      try:
-        reaction, user = await self.client.wait_for('reaction_add', timeout=60, check=check)
-      except asyncio.TimeoutError:
-        await msg.remove_reaction('⬅️', self.client.user)
-        await msg.remove_reaction('➡️', self.client.user)
-        break
-      else:
-        if str(reaction.emoji) == "➡️":
-            await msg.remove_reaction(reaction.emoji, user)
-            if index + 6 < lensa:
-                index += 6
-            continue
-        elif str(reaction.emoji) == "⬅️":
-            await msg.remove_reaction(reaction.emoji, user)
-            if index > 0:
-                index -= 6
-            continue
+          if str(reaction.emoji) == "➡️":
+              await msg.remove_reaction(reaction.emoji, user)
+              if index + 6 < lensa:
+                  index += 6
+              continue
+          elif str(reaction.emoji) == "⬅️":
+              await msg.remove_reaction(reaction.emoji, user)
+              if index > 0:
+                  index -= 6
+              continue
 
 def setup(client):
   #client.add_command(help)
