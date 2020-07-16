@@ -8,6 +8,7 @@ from datetime import datetime
 import random
 from images.agencies import space_agencies
 import asyncio
+from images.movies import movies
 
 class Astronomy(commands.Cog):
   '''
@@ -497,6 +498,90 @@ class Astronomy(commands.Cog):
                   index -= 6
               continue
 
+  @commands.command()
+  @commands.cooldown(1, 5, type=commands.BucketType.user)
+  async def movie(self, ctx, *, title: str = None):
+    '''
+    Shows some movies about astronomy and space. Or a specific one.
+    :param title: The name/title of the movie.
+    '''
+    if title:
+      all_titles = movies.keys()
+      for t in all_titles:
+        if str(title).lower() == str(t).lower():
+          the_movie = t
+          break
+      else:
+        return await ctx.send(f"**{ctx.author.mention}, '`{title.title()}`' is either not a movie or not a movie that's in my list!**")
+
+      m = movies[the_movie]
+      embed = discord.Embed(
+        title=f"🎥 __{the_movie}__ ({m[1]})",
+        description=f"{m[0]}",
+        timestamp=ctx.message.created_at,
+        color=ctx.author.color,
+        url=m[2]
+      )
+      embed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar_url)
+      await ctx.send(embed=embed)
+
+
+    else:
+      refs = ['https://spacenews.com/11-must-see-space-movies-for-anyone-serious-about-space/', 'https://www.theringer.com/2017/9/11/16285932/25-best-space-movies-ranked']
+      refs = [f"[link{i+1}]({r})" for i, r in enumerate(refs)]
+      embed = discord.Embed(title="🎥 __Movies About Astronomy and Space__ 🎥",
+      description=f"Refs: {', '.join(refs)}",
+      color=ctx.author.color,
+      timestamp=ctx.message.created_at,)
+
+      msg = await ctx.send(embed=embed)
+
+      def check(reaction, user):
+        return str(reaction.message.id) == str(msg.id) and user == ctx.author and str(reaction.emoji) in ['⬅️', '➡️']
+
+
+      await msg.add_reaction('⬅️')
+      await msg.add_reaction('➡️')
+      lenmo = len(list(movies))
+      index = 0
+      while True:
+        for i in range(2):
+          try:
+            key = list(movies)[index + i]
+            value = movies[key]
+          except IndexError:
+            break
+          else:
+            embed.add_field(
+              name=f"{index+1+i}# {key} ({value[1]})",
+              value=f"{value[0]}. [[+]]({value[2]})",
+              inline=True
+              )
+
+
+
+            embed.set_footer(text=f"({index+1} - {index+1+i}) of {lenmo}")
+
+        await msg.edit(embed=embed)
+        embed.clear_fields()
+        try:
+          reaction, user = await self.client.wait_for('reaction_add', timeout=60, check=check)
+        except asyncio.TimeoutError:
+          await msg.remove_reaction('⬅️', self.client.user)
+          await msg.remove_reaction('➡️', self.client.user)
+          break
+        else:
+          if str(reaction.emoji) == "➡️":
+              await msg.remove_reaction(reaction.emoji, user)
+              if index + 2 < lenmo:
+                  index += 2
+              continue
+          elif str(reaction.emoji) == "⬅️":
+              await msg.remove_reaction(reaction.emoji, user)
+              if index > 0:
+                  index -= 2
+              continue
+    
 def setup(client):
   #client.add_command(help)
   client.add_cog(Astronomy(client))
