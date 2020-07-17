@@ -190,7 +190,10 @@ class Astronomy(commands.Cog):
         astro = await self.get_astro(the_user[0][1] + 1, galaxy)
         if await self.disabled_server(channel.guild.id):
           return
-        return await channel.send(f"**{user.mention} has leveled up to `{astro[0]}`!**")
+        try:
+          return await channel.send(f"**{user.mention} has leveled up to `{astro[0]}`!**")
+        except Exception:
+          pass
 
   async def update_user_lvl(self, user_id: int, user_lvl: int):
     mycursor, db = await self.the_database()
@@ -454,7 +457,7 @@ class Astronomy(commands.Cog):
       await asyncio.sleep(0.5)
 
       def check(reaction, user):
-        return str(reaction.message.channel) == str(msg.channel) and user == ctx.author and str(reaction.emoji) in ['⬅️', '➡️']
+        return str(reaction.message.id) == str(msg.id) and user == ctx.author and str(reaction.emoji) in ['⬅️', '➡️']
 
 
       await msg.add_reaction('⬅️')

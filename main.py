@@ -123,53 +123,56 @@ async def invite(ctx):
   await ctx.send(f"Here's my invite:\n{invite}")
 
 @client.command()
-@commands.has_permissions(add_reactions=True, embed_links=True)
-async def help(ctx, co: str = None) -> object:
-  '''Provides a description of all commands and cogs.
-  :param co: Cog or command that you want to see. (Optional)'''
-  if not co:
-    halp=discord.Embed(title='Cog Listing and Uncategorized Commands',
-                              description='```Use o!help *cog* or help *command* to find out more about them!\n(BTW, the Cog Name Must Be in Title Case, Just Like this Sentence.)\nExample: o!help Astronomy```', color=discord.Color.dark_purple(),timestamp=ctx.message.created_at)
+async def help(ctx, cmd: str = None):
+  '''
+  Shows some information about commands and categories.
+  '''
+  if not cmd:
+      embed = discord.Embed(
+      title="All commands and categories",
+      description=f"```ini\nUse {client.command_prefix}help command or {client.command_prefix}help category to know more about a specific command or category\n\n[Examples]\n[1] Category: {client.command_prefix}help Astronomy\n[2] Command : {client.command_prefix}help listUniverse```",
+      timestamp=ctx.message.created_at,
+      color=ctx.author.color
+      )
 
-    cogs_desc = []
-    for x in client.cogs:
-        cogs_desc.append(x)
-    halp.add_field(name='__Cogs__',value=f"**>** {', '.join(cogs_desc)}",inline=False)
+      for cog in client.cogs:
+          cog = client.get_cog(cog)
+          commands = [c.name for c in cog.get_commands() if not c.hidden]
+          #print(commands)
+          embed.add_field(
+          name=f"__{cog.qualified_name}__",
+          value=f"`Commands:` {', '.join(commands)}",
+          inline=False
+          )
 
-    cmds_desc = ''
-    for y in client.walk_commands():
-        if not y.cog_name and not y.hidden:
-            if y.help:
-              cmds_desc += (f"{y.name} - `{y.help}`"+'\n')
-            else:
-              cmds_desc += (f"{y.name}"+'\n')
-    halp.add_field(name='__Uncategorized Commands__',value=cmds_desc[0:len(cmds_desc)-1],inline=False)
+      cmds = []
+      for y in client.walk_commands():
+          if not y.cog_name and not y.hidden:
+              cmds.append(y.name)
+      embed.add_field(
+      name='__Uncategorized Commands__', 
+      value=f"`Commands:` {', '.join(cmds)}", 
+      inline=False)
+      await ctx.send(embed=embed)
 
-    await ctx.message.add_reaction(emoji='✉')
-    #return await ctx.send(embed=halp)
-    return await ctx.send('',embed=halp)
-
-
-  # Checks if it's a command
-  if command := client.get_command(co):
-    command_embed = discord.Embed(title=f"__Command:__ {command.name}", description=f"__**Description:**__\n```{command.help}```", color=discord.Color.dark_purple(), timestamp=ctx.message.created_at)
-    #print(command.__doc__)
-    await ctx.send(embed=command_embed)
-
-  # Checks if it's a cog
-  elif cog := client.get_cog(co):
-    cog_embed = discord.Embed(title=f"__Cog:__ {cog.qualified_name}", description=f"__**Description:**__\n```{cog.description}```", color=discord.Color.dark_purple(), timestamp=ctx.message.created_at)
-    #name = command.qualified_name
-    #print(command.description)
-    for c in cog.get_commands():
-        if not c.hidden:
-            cog_embed.add_field(name=c.name,value=c.help,inline=False)
-
-    await ctx.send(embed=cog_embed)
-
-  # Otherwise, it's an invalid parameter (Not found)
   else:
-    await ctx.send(f"**Invalid parameter! `{co}` is neither a command nor a cog!**")
+    # Checks if it's a command
+    if command := client.get_command(cmd.lower()):
+      command_embed = discord.Embed(title=f"__Command:__ {command.name}", description=f"__**Description:**__\n```{command.help}```", color=ctx.author.color, timestamp=ctx.message.created_at)
+      await ctx.send(embed=command_embed)
+
+    # Checks if it's a cog
+    elif cog := client.get_cog(cmd.title()):
+      cog_embed = discord.Embed(title=f"__Cog:__ {cog.qualified_name}", description=f"__**Description:**__\n```{cog.description}```", color=ctx.author.color, timestamp=ctx.message.created_at)
+      for c in cog.get_commands():
+          if not c.hidden:
+              cog_embed.add_field(name=c.name,value=c.help,inline=False)
+
+      await ctx.send(embed=cog_embed)
+
+    # Otherwise, it's an invalid parameter (Not found)
+    else:
+      await ctx.send(f"**Invalid parameter! `{cmd}` is neither a command nor a cog!**")
 
 @client.command()
 async def vote(ctx):

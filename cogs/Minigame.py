@@ -4,7 +4,7 @@ import asyncio
 import random
 from images.qa import quizzes
 
-class MiniGame(commands.Cog):
+class Minigame(commands.Cog):
   '''
   Minigame related commands.
   '''
@@ -129,6 +129,7 @@ Would you like to go **left** or **right**?''')
     '''
 
     quiz_msg = await ctx.send(embed=discord.Embed(title='🎮'))
+    await asyncio.sleep(0.5)
     while True:
       quiz = random.choice(list(quizzes.items()))
       quiz_embed = discord.Embed(
@@ -172,4 +173,4 @@ Would you like to go **left** or **right**?''')
         await quiz_msg.remove_reaction('🔄', self.client.user)
         continue
 def setup(client):
-  client.add_cog(MiniGame(client))
+  client.add_cog(Minigame(client))
