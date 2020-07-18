@@ -31,7 +31,6 @@ async def on_command_error(ctx, error):
 
   if isinstance(error, commands.CommandOnCooldown):
     secs = error.retry_after
-    print(error.retry_after)
     if int(secs) >= 60:
       await ctx.send(f"You are on cooldown! Try again in {secs/60:.1f} minutes!")
     else:
@@ -89,30 +88,40 @@ async def ping(ctx):
   '''
   Shows the latency.
   '''
-  await ctx.send(f"**Command successfully tested! Ping: __{round(client.latency / 100)}__**")
+  await ctx.send(f"**Ping: __{round(client.latency * 1000)}__ ms**")
 
 
 @client.command()
 @commands.cooldown(1, 10, type=commands.BucketType.guild)
 async def info(ctx):
-    '''
-    Shows some information about the bot itself.
-    '''
-    embed = discord.Embed(title='Artemis Bot', description="__**WHAT IS IT?:**__```Hello, the Artemis Bot is an open source bot based on astronomy, which its only purpose is to portray information about the universe.```", colour=discord.Colour.dark_purple(), url="https://theartemisbot.herokuapp.com", timestamp=ctx.message.created_at)
-    embed.add_field(name="📚 __**Topics**__",
-                    value="More than 25 topics to explore.",
-                    inline=False)
-    embed.add_field(name="💻 __**Programmed in**__",
-                    value="The Artemis bot was built in Python, and you can find its GitHub repository [here](https://github.com/yagomichalak/astronomy-bot)",
-                    inline=False)
-    embed.add_field(name="🌎 __**Global ranking**__ ", value="It has a global level ranking based on messages sent.", inline=False)
-    embed.set_footer(text=ctx.guild.name,
-                     icon_url='https://cdn.discordapp.com/attachments/719020754858934294/720294157406568458/universe_hub_server_icon.png')
-    embed.set_thumbnail(
-        url=client.user.avatar_url)
-    embed.set_author(name='DNK#6725', url='https://discord.gg/7DyWxSt',
-                     icon_url='https://cdn.discordapp.com/attachments/719020754858934294/720289112040669284/DNK_icon.png')
-    await ctx.send(embed=embed)
+  '''
+  Shows some information about the bot itself.
+  '''
+  embed = discord.Embed(title='Artemis Bot', description="__**WHAT IS IT?:**__```Hello, the Artemis Bot is an open source bot based on astronomy, which its only purpose is to portray information about the universe.```", colour=discord.Colour.dark_purple(), url="https://theartemisbot.herokuapp.com", timestamp=ctx.message.created_at)
+  embed.add_field(name="📚 __**Topics**__",
+                value="`27` topics about the universe to explore.",
+                inline=True)
+  embed.add_field(name="💻 __**Programmed in**__",
+                value="The Artemis bot was built in Python, and you can find its GitHub repository [here](https://github.com/yagomichalak/astronomy-bot).",
+                inline=True)
+  embed.add_field(name="🚀 __**Space Agencies**__", 
+                value="You can see all `88` space agencies listed nicely.",
+                inline=True)
+  embed.add_field(name="🎥 __**Movies**__",
+                value="A special list with `34` movies about astronomy and space in general.",
+                inline=True)
+  embed.add_field(name="🎮 __**Minigames**__",
+                value="It currently has a quiz game and a short story, choice-based game.",
+                inline=True)
+  embed.add_field(name="🌎 __**Global ranking**__ ", 
+                value="It has a global level ranking system universe themed.",       inline=True)
+  embed.set_footer(text=ctx.guild.name,
+                icon_url='https://cdn.discordapp.com/attachments/719020754858934294/720294157406568458/universe_hub_server_icon.png')
+  embed.set_thumbnail(
+    url=client.user.avatar_url)
+  embed.set_author(name='DNK#6725', url='https://discord.gg/7DyWxSt',
+                icon_url='https://cdn.discordapp.com/attachments/719020754858934294/720289112040669284/DNK_icon.png')
+  await ctx.send(embed=embed)
 
 @client.command()
 async def invite(ctx):
@@ -138,7 +147,6 @@ async def help(ctx, cmd: str = None):
       for cog in client.cogs:
           cog = client.get_cog(cog)
           commands = [c.name for c in cog.get_commands() if not c.hidden]
-          #print(commands)
           embed.add_field(
           name=f"__{cog.qualified_name}__",
           value=f"`Commands:` {', '.join(commands)}",
@@ -179,18 +187,19 @@ async def vote(ctx):
   '''
   Shows all bot lists where you can vote for the bot on.
   '''
-  botlists = [
-  ['Bots Para Discord', 'https://botsparadiscord.com/bots/723699955008798752'],
-  ['Glenn Bot List', 'https://glennbotlist.xyz/bot/723699955008798752/vote'],
-  ['Discord Bot List', 'https://discordbotlist.com/bots/artemis/upvote'],
-  ['Quality Bot List', 'https://www.qualitybotlist.ml/vote/723699955008798752'],
-  ]
-  truelist = [f"[{bl[0]}]({bl[1]})" for bl in botlists]
+  tgg = 'https://top.gg/bot/723699955008798752'
   embed = discord.Embed(title="__Vote on me!__",
-  description=f"Click on any of these names to vote, respectively:\n{', '.join(truelist)}."
+  description=f"Click [here]({tgg}) to vote."
   )
   embed.set_thumbnail(url=client.user.avatar_url)
   await ctx.send(embed=embed)
+
+@client.command()
+async def servers(ctx):
+  '''
+  Shows how many servers the bot is in.
+  '''
+  await ctx.send(f"**I'm currently in {len(client.guilds)} servers!**")
 
 @client.command(hidden=True)
 @commands.is_owner()

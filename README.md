@@ -4,7 +4,11 @@ A simple informative Discord bot.
 
 
 # Features
-- More than 25 topics to explore (WIP)
+- More than 25 topics about the universe to explore
+
+- You can see all space agencies (88) around the world with a simple command.
+
+- A special list with 33 movies about astronomy and space in genera.
 
 - Global level ranking system, universe themed.
 

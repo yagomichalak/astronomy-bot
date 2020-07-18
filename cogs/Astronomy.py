@@ -169,7 +169,10 @@ class Astronomy(commands.Cog):
   async def check_user(self, user_id: int):
     mycursor, db = await self.the_database()
     mycursor.execute(f"SELECT * FROM Universe WHERE user_id = {user_id}")
-    if mycursor.fetchall():
+    #changed
+    user = mycursor.fetchall()
+    mycursor.close()
+    if user:
       return True
     else:
       return False
@@ -177,7 +180,10 @@ class Astronomy(commands.Cog):
   async def get_user(self, user_id: int):
     mycursor, db = await self.the_database()
     mycursor.execute(f"SELECT * FROM Universe WHERE user_id = {user_id}")
-    if the_user := mycursor.fetchall():
+    the_user = mycursor.fetchall()
+    mycursor.close()
+    #changed2
+    if the_user:
       return the_user
     else:
       return False
@@ -188,7 +194,7 @@ class Astronomy(commands.Cog):
     if the_user[0][1] < lvl_end:
         await self.update_user_lvl(user.id, the_user[0][1] + 1)
         astro = await self.get_astro(the_user[0][1] + 1, galaxy)
-        if await self.disabled_server(channel.guild.id):
+        if not await self.allowed_server(channel.guild.id):
           return
         try:
           return await channel.send(f"**{user.mention} has leveled up to `{astro[0]}`!**")
@@ -265,11 +271,8 @@ class Astronomy(commands.Cog):
     has_planet = False
     for system in galaxy:
         for pi, p in reversed(list(system.items())):
-            #print(pi, p)
             i += 1
-            #print(f"Planet: {i} {p}")
             if i == level:
-                #print(f"You're {system[pi]}")
                 has_planet = [pi, system[pi]]
                 break
         if has_planet:
@@ -310,82 +313,82 @@ class Astronomy(commands.Cog):
 
   @commands.command()
   @commands.has_permissions(administrator=True)
-  async def enable_levels(self, ctx):
-    '''
-    Enables leveling up messages for a specific server.
-    '''
-    if not await self.table_blocked_guilds_exists():
-      return await ctx.send("**This feature is on maintenance!**")
-
-    if await self.disabled_server(ctx.guild.id):
-      await self.remove_disabled_server(ctx.guild.id)
-      await ctx.send("**Levels enabled again for this server!**")
-    else:
-      await ctx.send("**Levels are already enabled for this server!**")
-
-  @commands.command()
-  @commands.has_permissions(administrator=True)
   async def disable_levels(self, ctx):
     '''
     Disables leveling up messages for a specific server.
     '''
-    if not await self.table_blocked_guilds_exists():
+    if not await self.table_allowed_guilds_exists():
       return await ctx.send("**This feature is on maintenance!**")
-    if not await self.disabled_server(ctx.guild.id):
-      await self.insert_disabled_server(ctx.guild.id)
-      await ctx.send("**Levels disabled for this server!**")
+
+    if await self.allowed_server(ctx.guild.id):
+      await self.remove_allowed_server(ctx.guild.id)
+      await ctx.send("**Levels disabled again for this server!**")
     else:
       await ctx.send("**Levels are already disabled for this server!**")
+
+  @commands.command()
+  @commands.has_permissions(administrator=True)
+  async def enable_levels(self, ctx):
+    '''
+    Enables leveling up messages for a specific server.
+    '''
+    if not await self.table_allowed_guilds_exists():
+      return await ctx.send("**This feature is on maintenance!**")
+    if not await self.allowed_server(ctx.guild.id):
+      await self.insert_allowed_server(ctx.guild.id)
+      await ctx.send("**Levels enabled for this server!**")
+    else:
+      await ctx.send("**Levels are already enabled for this server!**")
   
   # Database commands
   @commands.command(hidden=True)
   @commands.is_owner()
-  async def create_table_blocked_guilds(self, ctx):
+  async def create_table_allowed_guilds(self, ctx):
     '''
-    Creates the BlockedGuilds table.
+    Creates the AllowedGuilds table.
     '''
-    if await self.table_blocked_guilds_exists():
-      return await ctx.send("**Table __BlockedGuilds__ already exists!**")
+    if await self.table_allowed_guilds_exists():
+      return await ctx.send("**Table __AllowedGuilds__ already exists!**")
     
     mycursor, db = await self.the_database()
-    mycursor.execute("CREATE TABLE BlockedGuilds (guild_id INTEGER NOT NULL)")
+    mycursor.execute("CREATE TABLE AllowedGuilds (guild_id INTEGER NOT NULL)")
     db.commit()
     mycursor.close()
-    return await ctx.send("**Table __BlockedGuilds__ created!**")
+    return await ctx.send("**Table __AllowedGuilds__ created!**")
 
   @commands.command(hidden=True)
   @commands.is_owner()
-  async def drop_table_blocked_guilds(self, ctx):
+  async def drop_table_allowed_guilds(self, ctx):
     '''
-    Drops the BlockedGuilds table.
+    Drops the AllowedGuilds table.
     '''
-    if not await self.table_blocked_guilds_exists():
-      return await ctx.send("**Table __BlockedGuilds__ doesn't exist!**")
+    if not await self.table_allowed_guilds_exists():
+      return await ctx.send("**Table __AllowedGuilds__ doesn't exist!**")
     
     mycursor, db = await self.the_database()
-    mycursor.execute("DROP TABLE BlockedGuilds")
+    mycursor.execute("DROP TABLE AllowedGuilds")
     db.commit()
     mycursor.close()
-    return await ctx.send("**Table __BlockedGuilds__ dropped!**")
+    return await ctx.send("**Table __AllowedGuilds__ dropped!**")
 
   @commands.command(hidden=True)
   @commands.is_owner()
-  async def reset_table_blocked_guilds(self, ctx):
+  async def reset_table_allowed_guilds(self, ctx):
     '''
-    Resets the BlockedGuilds table.
+    Resets the AllowedGuilds table.
     '''
-    if not await self.table_blocked_guilds_exists():
-      return await ctx.send("**Table __BlockedGuilds__ doesn't exist yet!**")
+    if not await self.table_allowed_guilds_exists():
+      return await ctx.send("**Table __AllowedGuilds__ doesn't exist yet!**")
     
     mycursor, db = await self.the_database()
-    mycursor.execute("DELETE FROM BlockedGuilds")
+    mycursor.execute("DELETE FROM AllowedGuilds")
     db.commit()
     mycursor.close()
-    return await ctx.send("**Table __BlockedGuilds__ reset!**")
+    return await ctx.send("**Table __AllowedGuilds__ reset!**")
 
-  async def table_blocked_guilds_exists(self):
+  async def table_allowed_guilds_exists(self):
     mycursor, db = await self.the_database()
-    mycursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='BlockedGuilds'")
+    mycursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='AllowedGuilds'")
     table_info = mycursor.fetchall()
     mycursor.close()
     if len(table_info) == 0:
@@ -393,21 +396,21 @@ class Astronomy(commands.Cog):
     else:
         return True
 
-  async def insert_disabled_server(self, gid: int):
+  async def insert_allowed_server(self, gid: int):
     mycursor, db = await self.the_database()
-    mycursor.execute(f"INSERT INTO BlockedGuilds (guild_id) VALUES ({gid})")
+    mycursor.execute(f"INSERT INTO AllowedGuilds (guild_id) VALUES ({gid})")
     db.commit()
     mycursor.close()
   
-  async def remove_disabled_server(self, gid: int):
+  async def remove_allowed_server(self, gid: int):
     mycursor, db = await self.the_database()
-    mycursor.execute(f"DELETE FROM BlockedGuilds WHERE guild_id = {gid}")
+    mycursor.execute(f"DELETE FROM AllowedGuilds WHERE guild_id = {gid}")
     db.commit()
     mycursor.close()
 
-  async def disabled_server(self, gid: int):
+  async def allowed_server(self, gid: int):
     mycursor, db = await self.the_database()
-    mycursor.execute(f"SELECT * FROM BlockedGuilds WHERE guild_id = {gid}")
+    mycursor.execute(f"SELECT * FROM AllowedGuilds WHERE guild_id = {gid}")
     the_guild = mycursor.fetchall()
     mycursor.close()
     if len(the_guild) > 0:
@@ -466,14 +469,12 @@ class Astronomy(commands.Cog):
       index = 0
       while True:
         for i in range(6):
-          #print(i)
           try:
             key = list(space_agencies)[index + i]
             value = space_agencies[key]
           except IndexError:
             break
           else:
-            #print(f"key {key}")
             website = f"[Website]({value[5]})" if value[5] else ''
             embed.add_field(
               name=f"{value[0]} {key} ({value[4]})", 
