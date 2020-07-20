@@ -147,11 +147,12 @@ async def help(ctx, cmd: str = None):
       for cog in client.cogs:
           cog = client.get_cog(cog)
           commands = [c.name for c in cog.get_commands() if not c.hidden]
-          embed.add_field(
-          name=f"__{cog.qualified_name}__",
-          value=f"`Commands:` {', '.join(commands)}",
-          inline=False
-          )
+          if commands:
+            embed.add_field(
+            name=f"__{cog.qualified_name}__",
+            value=f"`Commands:` {', '.join(commands)}",
+            inline=False
+            )
 
       cmds = []
       for y in client.walk_commands():
@@ -187,11 +188,13 @@ async def vote(ctx):
   '''
   Shows all bot lists where you can vote for the bot on.
   '''
-  tgg = 'https://top.gg/bot/723699955008798752'
+  vote = 'https://top.gg/bot/723699955008798752/vote'
+  tgg = "https://top.gg/api/widget/723699955008798752.png?usernamecolor=FFFFFF&topcolor=000000"
   embed = discord.Embed(title="__Vote on me!__",
-  description=f"Click [here]({tgg}) to vote."
+  description=f"Click [here]({vote}) to vote."
   )
   embed.set_thumbnail(url=client.user.avatar_url)
+  embed.set_image(url=tgg)
   await ctx.send(embed=embed)
 
 @client.command()

@@ -144,7 +144,7 @@ Would you like to go **left** or **right**?''')
         answer_content = answer.content
       except asyncio.TimeoutError:
         quiz_embed.set_footer(text='React 🔄 to play again.')
-        quiz_embed.description = f"**{ctx.author.mention}, you took too long to answer the question!**"
+        quiz_embed.description = f"**{ctx.author.mention}, you took too long to restart the quiz!**"
         await quiz_msg.edit(embed=quiz_embed)
       else:
         quiz_embed.set_footer(text='React 🔄 to play again.')
@@ -165,7 +165,7 @@ Would you like to go **left** or **right**?''')
       except asyncio.TimeoutError:
         await quiz_msg.remove_reaction('🔄', self.client.user)
         quiz_embed.set_footer(text='Try again')
-        quiz_embed.description = f"**{ctx.author.mention}, you took too long to answer the question!**"
+        quiz_embed.description = f"**{ctx.author.mention}, you took too long to restart the quiz!**"
         await quiz_msg.edit(embed=quiz_embed)
         break
       else:
