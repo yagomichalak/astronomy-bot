@@ -177,36 +177,29 @@ async def help(ctx, cmd: str = None):
     # Checks if it's a command
     if command := client.get_command(cmd.lower()):
       command_embed = discord.Embed(title=f"__Command:__ {command.name}", description=f"__**Description:**__\n```{command.help}```", color=ctx.author.color, timestamp=ctx.message.created_at)
-      await ctx.send(embed=command_embed)
+      return await ctx.send(embed=command_embed)
 
     # Checks if it's a cog
-    elif cog := client.get_cog(cmd.title()):
-      cog_embed = discord.Embed(title=f"__Cog:__ {cog.qualified_name}", description=f"__**Description:**__\n```{cog.description}```", color=ctx.author.color, timestamp=ctx.message.created_at)
-      for c in cog.get_commands():
-          if not c.hidden:
-              cog_embed.add_field(name=c.name,value=c.help,inline=False)
+    # elif cog := client.get_cog(cmd.title()):
+    #   cog_embed = discord.Embed(title=f"__Cog:__ {cog.qualified_name}", description=f"__**Description:**__\n```{cog.description}```", color=ctx.author.color, timestamp=ctx.message.created_at)
+    #   for c in cog.get_commands():
+    #       if not c.hidden:
+    #           cog_embed.add_field(name=c.name,value=c.help,inline=False)
 
-      await ctx.send(embed=cog_embed)
+    for cog in client.cogs:
+      if str(cog).lower() == str(cmd).lower():
+          cog = client.get_cog(cog)
+          cog_embed = discord.Embed(title=f"__Cog:__ {cog.qualified_name}", description=f"__**Description:**__\n```{cog.description}```", color=ctx.author.color, timestamp=ctx.message.created_at)
+          for c in cog.get_commands():
+              if not c.hidden:
+                  cog_embed.add_field(name=c.name,value=c.help,inline=False)
+
+          return await ctx.send(embed=cog_embed)
 
     # Otherwise, it's an invalid parameter (Not found)
     else:
       await ctx.send(f"**Invalid parameter! `{cmd}` is neither a command nor a cog!**")
 
-@client.command()
-async def vote(ctx):
-  '''
-  Shows all bot lists where you can vote for the bot on.
-  '''
-  vote = 'https://top.gg/bot/723699955008798752/vote'
-  tgg = 'https://top.gg/api/widget/723699955008798752.png?usernamecolor=FFF0F0&topcolor=000000'
-  tgg = tgg.replace('svg', 'png')
-  #tgg = 'http://gg.gg/kr8ue'
-  embed = discord.Embed(title="__Vote on me!__",
-  description=f"Click [here]({vote}) to vote."
-  )
-  embed.set_thumbnail(url=client.user.avatar_url)
-  embed.set_image(url=tgg)
-  await ctx.send(embed=embed)
 
 @client.command()
 async def servers(ctx):
