@@ -2,11 +2,13 @@ import discord
 from discord.ext import commands, tasks
 import keep_alive
 import os
+from itertools import cycle
 
 client = commands.Bot(command_prefix='o!')
 client.remove_command('help')
 token = os.getenv('TOKEN')
 on_guild_log_id = os.getenv('ON_GUILD_LOG_ID')
+status = cycle(['member', 'server'])
 
 @client.event
 async def on_ready():
@@ -78,10 +80,17 @@ async def on_guild_remove(guild):
     await guild_log.send(embed=embed)
 
 
-@tasks.loop(seconds=10)
+@tasks.loop(seconds=30)
 async def in_servers():
-  all_guilds = len(await client.fetch_guilds(limit=150).flatten())
-  await client.change_presence(activity=discord.Streaming(name=f"on {all_guilds} planets", url="https://www.twitch.tv/nasa"))
+  ns = next(status)
+  if ns == 'member':
+    ns = f"for {len([x for l in [g.members for g in client.guilds] for x in l])} users!"
+
+  elif ns == 'server':
+    ns = f"on {len(client.guilds)} servers!"
+
+  #all_guilds = len(await client.fetch_guilds(limit=150).flatten())
+  await client.change_presence(activity=discord.Streaming(name=ns, url="https://www.twitch.tv/nasa"))
 
 @client.command()
 async def ping(ctx):
@@ -189,7 +198,9 @@ async def vote(ctx):
   Shows all bot lists where you can vote for the bot on.
   '''
   vote = 'https://top.gg/bot/723699955008798752/vote'
-  tgg = "https://top.gg/api/widget/723699955008798752.png?usernamecolor=FFFFFF&topcolor=000000"
+  tgg = 'https://top.gg/api/widget/723699955008798752.png?usernamecolor=FFF0F0&topcolor=000000'
+  tgg = tgg.replace('svg', 'png')
+  #tgg = 'http://gg.gg/kr8ue'
   embed = discord.Embed(title="__Vote on me!__",
   description=f"Click [here]({vote}) to vote."
   )
