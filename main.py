@@ -179,13 +179,6 @@ async def help(ctx, cmd: str = None):
       command_embed = discord.Embed(title=f"__Command:__ {command.name}", description=f"__**Description:**__\n```{command.help}```", color=ctx.author.color, timestamp=ctx.message.created_at)
       return await ctx.send(embed=command_embed)
 
-    # Checks if it's a cog
-    # elif cog := client.get_cog(cmd.title()):
-    #   cog_embed = discord.Embed(title=f"__Cog:__ {cog.qualified_name}", description=f"__**Description:**__\n```{cog.description}```", color=ctx.author.color, timestamp=ctx.message.created_at)
-    #   for c in cog.get_commands():
-    #       if not c.hidden:
-    #           cog_embed.add_field(name=c.name,value=c.help,inline=False)
-
     for cog in client.cogs:
       if str(cog).lower() == str(cmd).lower():
           cog = client.get_cog(cog)
@@ -211,38 +204,77 @@ async def servers(ctx):
 @client.command(hidden=True)
 @commands.is_owner()
 async def load(ctx, extension: str):
+  '''
+  (Owner) loads a cog.
+  '''
   if not extension:
     return await ctx.send("**Please, inform an extension!**")
-  try:
-    client.load_extension(f"cogs.{extension}")
-  except commands.ExtensionAlreadyLoaded:
-    return await ctx.send(f"**The `{extension}` cog is already loaded!**")
-  await ctx.send(f"**`{extension}` cog loaded!**")
+  for cog in os.listdir('./cogs'):
+      if str(cog[:-3]).lower() == str(extension).lower():
+        try:
+          client.load_extension(f"cogs.{cog[:-3]}")
+        except commands.ExtensionAlreadyLoaded:
+          return await ctx.send(f"**The `{extension}` cog is already loaded!**")
+        return await ctx.send(f"**`{extension}` cog loaded!**")
+  else:
+    await ctx.send(f"**`{extension}` is not a cog!**")
 
 
 @client.command(hidden=True)
 @commands.is_owner()
 async def unload(ctx, extension: str):
+  '''
+  (Owner) unloads a cog.
+  '''
   if not extension:
     return await ctx.send("**Please, inform an extension!**")
-  try:
-    client.unload_extension(f"cogs.{extension}")
-  except commands.ExtensionNotLoaded:
-    return await ctx.send(f"**The `{extension}` cog is not even loaded!**")
-  await ctx.send(f"**`{extension}` cog unloaded!**")
+  for cog in client.cogs:
+      if str(cog).lower() == str(extension).lower():
+        try:
+          client.unload_extension(f"cogs.{cog}")
+        except commands.ExtensionNotLoaded:
+          return await ctx.send(f"**The `{extension}` cog is not even loaded!**")
+        return await ctx.send(f"**`{extension}` cog unloaded!**")
+  else:
+    await ctx.send(f"**`{extension}` is not a cog!**")
 
 
 @client.command(hidden=True)
 @commands.is_owner()
 async def reload(ctx, extension: str):
+  '''
+  (Owner) reloads a cog.
+  '''
   if not extension:
     return await ctx.send("**Please, inform an extension!**")
-  try:
-    client.unload_extension(f"cogs.{extension}")
-    client.load_extension(f"cogs.{extension}")
-  except commands.ExtensionNotLoaded:
-    return await ctx.send(f"**The `{extension}` cog is not even loaded!**")
-  await ctx.send(f"**`{extension}` cog reloaded!**")
+  
+  for cog in client.cogs:
+      if str(cog).lower() == str(extension).lower():
+        try:
+          client.unload_extension(f"cogs.{cog}")
+          client.load_extension(f"cogs.{cog}")
+        except commands.ExtensionNotLoaded:
+          return await ctx.send(f"**The `{extension}` cog is not even loaded!**")
+        return await ctx.send(f"**`{extension}` cog reloaded!**")
+  else:
+    await ctx.send(f"**`{extension}` is not a cog!**")
+
+
+@client.command(hidden=True)
+@commands.is_owner()
+async def reload_all(ctx):
+  '''
+  (Owner) reloads all cogs.
+  '''
+  for file_name in os.listdir('./cogs'):
+    try:
+      if str(file_name).endswith(".py"):
+        client.unload_extension(f"cogs.{file_name[:-3]}")
+        client.load_extension(f"cogs.{file_name[:-3]}")
+    except commands.ExtensionNotLoaded:
+      pass
+
+  await ctx.send(f"**Cogs reloaded!**")
 
 
 for file_name in os.listdir('./cogs'):
