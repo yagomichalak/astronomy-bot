@@ -9,6 +9,7 @@ import random
 from images.agencies import space_agencies
 import asyncio
 from images.movies import movies
+import praw
 
 class Astronomy(commands.Cog):
   '''
@@ -17,6 +18,12 @@ class Astronomy(commands.Cog):
 
   def __init__(self, client):
     self.client = client
+    self.reddit = praw.Reddit(
+      client_id=os.getenv('REDDIT_CLIENT_ID'), # Client id
+      client_secret=os.getenv('REDDIT_CLIENT_SECRET'), # My client secret
+      user_agent=os.getenv('REDDIT_USER_AGENT'), # My user agent. It can be anything
+      username='', # Not needed
+      password='') # Not needed
 
 
   @commands.Cog.listener()
@@ -585,6 +592,50 @@ class Astronomy(commands.Cog):
               if index > 0:
                   index -= 2
               continue
+
+  @commands.command(hidden=True, aliases=['ge', 'give_xp', 'gxp'])
+  @commands.is_owner()
+  async def give_exp(self, ctx, member: discord.Member = None, xp: int = None):
+    '''
+    (Owner) Gives exp to a member.
+    :param xp: the amount of xp to give to the member.
+    '''
+    if not member:
+      return await ctx.send("**Inform a member to give xp!**")
+    if not xp:
+      return await ctx.send("**Inform an amount of xp!**")
+    if xp <= 0:
+      return await ctx.send("**Inform an amount of xp greater than 0!**")
+
+    if not await self.check_user(member.id):
+      await self.insert_user(member.id)
+
+    await self.update_user_xp(member.id, xp)
+    await ctx.send(f"**Given {xp}XP to {member.mention}!**")
+
+  @commands.command(hidden=True)
+  @commands.is_owner()
+  async def all_guilds(self, ctx):
+    info = [f"Server: {g.name}, Member count {g.member_count}" for g in self.client.guilds]
+    info1 = '\n'.join(info[:35])
+    info1 = f"```{info1}```"
+    await ctx.send(info1)
+    info2 = '\n'.join(info[35:])
+    info2 = f"```{info2}```"
+    await ctx.send(info2)
+
+  @commands.command(aliases=['ra'])
+  @commands.is_owner()
+  async def reddit(self, ctx):
+    '''
+		Shows a random post from the astronomy subreddit.
+		'''
+    post_submissions = self.reddit.subreddit('astronomy').hot()
+    post_to_pick = random.randint(1, 100)
+    for i in range(0, post_to_pick):
+      submissions = next(x for x in post_submissions if not x.stickied)
+
+    await ctx.send(submissions.url)
     
 def setup(client):
   #client.add_command(help)

@@ -273,7 +273,6 @@ async def reload_all(ctx):
         client.load_extension(f"cogs.{file_name[:-3]}")
     except commands.ExtensionNotLoaded:
       pass
-
   await ctx.send(f"**Cogs reloaded!**")
 
 

@@ -4,6 +4,8 @@ import requests
 import json
 import os
 from datetime import datetime
+import aiohttp
+import io
 
 class NASA(commands.Cog):
   '''
@@ -13,6 +15,7 @@ class NASA(commands.Cog):
   def __init__(self, client):
     self.client = client
     self.token = os.getenv('NASA_API_TOKEN')
+    self.session = aiohttp.ClientSession(loop=client.loop)
   
 
   @commands.command()
@@ -26,13 +29,14 @@ class NASA(commands.Cog):
       return await ctx.send("**I couldn't do that for some reason, try again later!**")
     else:
       data = json.loads(response.text)
-      # print(data)
-      # if data['code'] == 404:
-      #   return await ctx.send("**No picture for today yet!**")
-      embed = discord.Embed(title=data['title'], description=data['explanation'], color=ctx.author.color, timestamp=datetime.strptime(data['date'], '%Y-%m-%d'), url=data['hdurl'])
-      embed.set_image(url=data['url'])
-      embed.set_footer(text=data['copyright'])
-      await ctx.send(embed=embed)
+      try:
+        embed = discord.Embed(title=data['title'], description=data['explanation'], color=ctx.author.color, timestamp=datetime.strptime(data['date'], '%Y-%m-%d'), url=data['hdurl'])
+        embed.set_image(url=data['url'])
+        embed.set_footer(text=data['copyright'])
+      except Exception:
+        return await ctx.send("**It seems we don't have one pictue for today yet!**")
+      else:
+        await ctx.send(embed=embed)
 
   @commands.command(aliases=['s', 'google'])
   async def search(self, ctx, *, topic: str = None):
@@ -65,33 +69,33 @@ class NASA(commands.Cog):
         else:
           await ctx.send(embed=embed)
 
-  @commands.command(hidden=True)
-  @commands.is_owner()
+  @commands.command()
+  @commands.cooldown(1, 20, type=commands.BucketType.user)
   async def earth(self, ctx, lat: float = None, lon: float = None, dim: float = 0.025, date = datetime.utcnow().strftime('%Y-%m-%d')):
     '''
-    It does something.
+    Shows a view of the earth from a given latitude and longitude.
+    :param lat: Latitude.
+    :param lon: Longitude.
+    :param dim: Width and hight in degrees (Default=0.025).
+    :param date: The date (YYYY-MM-DD)(Default=today).
     '''
-    #print(date)
     if not lat:
       return await ctx.send("**You must inform the latitude!**")
     if not lon:
       return await ctx.send("**You must inform the longitude!**")
     root = 'https://api.nasa.gov/planetary/earth/imagery'
     try:
-        response = requests.get(f"{root}?lon={lon}&lat={lat}&date={date}&dim={dim}&api_key={self.token}")
-        # img_url = f"{root}/?lon={lon}&lat={lat}&date={date}&dim={dim}&api_key={self.token}"
-    except requests.HTTPError as exception:
-        return await ctx.send("I couldn't do that for some reason, try again later!")
-    else:
-      if response.status_code == 404:
-        return await ctx.send("**I can't find anything with these parameters!**")
-      embed = discord.Embed()
-      #print(dir(response))
-      #print(response.status_code)
-      #print(response.url)
-      embed.set_image(url=response.url)
-      await ctx.send("**It worked!**", embed=embed)
+        link = f"{root}?lon={lon}&lat={lat}&date={date}&dim={dim}&api_key={self.token}"
+        async with ctx.typing():
+          async with self.session.get(link) as response:
+            image = await response.read()
 
+    except Exception as error:
+      print(error)
+      return await ctx.send("I couldn't do that for some reason, try again later!")
+    else:
+      embed = discord.Embed()
+      await ctx.send("**Here's your view!!**", file=discord.File(io.BytesIO(image), 'earth.png'))
 
   @commands.command()
   @commands.cooldown(1, 10, type=commands.BucketType.user)
@@ -109,7 +113,7 @@ class NASA(commands.Cog):
         all_data = json.loads(response.text)
         days = list(all_data.keys())[:-2]
         embed = discord.Embed(
-            title="Mars Weather",
+            title="Mars Weather (F°)",
             description="Mars' air temperature of the last 7 days", 
             color=ctx.author.color)
         for day in days:
