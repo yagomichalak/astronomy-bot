@@ -10,6 +10,9 @@ from images.agencies import space_agencies
 import asyncio
 from images.movies import movies
 import praw
+import wikipedia
+import aiohttp
+import json
 
 class Astronomy(commands.Cog):
   '''
@@ -24,6 +27,7 @@ class Astronomy(commands.Cog):
       user_agent=os.getenv('REDDIT_USER_AGENT'), # My user agent. It can be anything
       username='', # Not needed
       password='') # Not needed
+    self.session = aiohttp.ClientSession(loop=client.loop)
 
 
   @commands.Cog.listener()
@@ -434,7 +438,7 @@ class Astronomy(commands.Cog):
     await self.whatIs(ctx, topic)
 
   @commands.command()
-  @commands.cooldown(1, 5, type=commands.BucketType.user)
+  @commands.cooldown(1, 10, type=commands.BucketType.user)
   async def agency(self, ctx, *, country: str = None):
     '''
     Shows all space agencies in the world or a specific one.
@@ -510,7 +514,7 @@ class Astronomy(commands.Cog):
               continue
 
   @commands.command()
-  @commands.cooldown(1, 5, type=commands.BucketType.user)
+  @commands.cooldown(1, 10, type=commands.BucketType.user)
   async def movie(self, ctx, *, title: str = None):
     '''
     Shows some movies about astronomy and space. Or a specific one.
@@ -625,7 +629,6 @@ class Astronomy(commands.Cog):
     await ctx.send(info2)
 
   @commands.command(aliases=['ra'])
-  @commands.is_owner()
   async def reddit(self, ctx):
     '''
 		Shows a random post from the astronomy subreddit.
@@ -636,7 +639,67 @@ class Astronomy(commands.Cog):
       submissions = next(x for x in post_submissions if not x.stickied)
 
     await ctx.send(submissions.url)
-    
+
+  @commands.command(aliases=['wk','w', 'wiki'])
+  @commands.cooldown(1, 10, type=commands.BucketType.user)
+  async def wikipedia(self, ctx, *, topic: str = None):
+    '''
+    Searches something on Wikipedia.
+    :param topic: The topic to search.
+    '''
+    if not topic:
+      return await ctx.send(f"**{ctx.author.mention}, please, inform a topic to search!**")
+    try:
+      result = wikipedia.summary(topic)
+    except Exception as error:
+      await ctx.send("**I couldn't find anything for this topic!**")
+    else:
+        if (len(result) <= 2048):
+          embed = discord.Embed(title=f"(Wikipedia) - __{topic.title()}__:", description=result, colour=discord.Colour.green())
+          await ctx.send(embed=embed)
+        else:
+          embedList = []
+          n = 2048
+          embedList = [result[i:i + n] for i in range(0, len(result), n)]
+          for num, item in enumerate(embedList, start=1):
+            if (num == 1):
+              embed = discord.Embed(title=f"(Wikipedia) - __{topic.title()}__:", description=item, colour=discord.Colour.green())
+              embed.set_footer(text="Page {}".format(num))
+              await ctx.send(embed=embed)
+            else:
+              embed = discord.Embed(description=item, colour=discord.Colour.green())
+              embed.set_footer(text="Page {}".format(num))
+              await ctx.send(embed=embed)
+
+  @commands.command(aliases=['cord', 'cords', 'coordinate'])
+  @commands.cooldown(1, 10, type=commands.BucketType.user)
+  async def coordinates(self, ctx, lat: float = None, lon: float = None):
+    '''
+    Shows some info of given coordinates.
+    :param lat: The latitude.
+    :param long: The longitude.
+    '''
+    root = 'https://api.wheretheiss.at/v1/coordinates'
+    if not lat:
+      return await ctx.send("**Inform the latitude!**")
+    if not lon:
+      return await ctx.send("**Inform the longitude!**")
+
+    try:
+      async with self.session.get(f"{root}/{lat},{lon}") as response:
+        response = await response.read()
+        response = json.loads(response)
+    except Exception as error:
+      return await ctx.send("**I can't work with these cords!**")
+    else:
+      embed = discord.Embed(
+        title=f"{lat}, {lon}",
+        description=f"**__Timezone ID__:** {response['timezone_id']}\n**__Offset__:** {response['offset']}\n**__Country Code__:** {response['country_code']}\n",
+        color=ctx.author.color,
+        timetstamp=ctx.message.created_at,
+        url=response['map_url']
+        )
+      await ctx.send(embed=embed)
 def setup(client):
   #client.add_command(help)
   client.add_cog(Astronomy(client))

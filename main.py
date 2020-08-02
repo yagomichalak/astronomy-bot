@@ -58,7 +58,10 @@ async def on_guild_join(guild):
 
   # Sends an embedded message in the new server
   if general and general.permissions_for(guild.me).send_messages:
-    await general.send(embed=embed)
+    try:
+      await general.send(embed=embed)
+    except Exception:
+      print('No perms to send a welcome message!')
 
   #Logs it in the bot's support server on_guild log
   guild_log = client.get_channel(int(on_guild_log_id))
@@ -90,7 +93,10 @@ async def in_servers():
     ns = f"on {len(client.guilds)} servers!"
 
   #all_guilds = len(await client.fetch_guilds(limit=150).flatten())
-  await client.change_presence(activity=discord.Streaming(name=ns, url="https://www.twitch.tv/nasa"))
+  try:
+    await client.change_presence(activity=discord.Streaming(name=ns, url="https://www.twitch.tv/nasa"))
+  except Exception:
+    pass
 
 @client.command()
 async def ping(ctx):
