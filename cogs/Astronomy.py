@@ -689,10 +689,7 @@ class Astronomy(commands.Cog):
       async with self.session.get(f"{root}/{lat},{lon}") as response:
         response = await response.read()
         response = json.loads(response)
-    except Exception as error:
-      return await ctx.send("**I can't work with these cords!**")
-    else:
-      embed = discord.Embed(
+        embed = discord.Embed(
         title=f"{lat}, {lon}",
         description=f"**__Timezone ID__:** {response['timezone_id']}\n**__Offset__:** {response['offset']}\n**__Country Code__:** {response['country_code']}\n",
         color=ctx.author.color,
@@ -700,6 +697,8 @@ class Astronomy(commands.Cog):
         url=response['map_url']
         )
       await ctx.send(embed=embed)
+    except Exception as error:
+      return await ctx.send("**I can't work with these cords!**")
 def setup(client):
   #client.add_command(help)
   client.add_cog(Astronomy(client))

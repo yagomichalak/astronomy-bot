@@ -28,8 +28,9 @@ async def on_command_error(ctx, error):
   # if isinstance(error, commands.CommandNotFound):
   #   await ctx.send(f"**There's no such command as `{ctx.message.content.split()[0]}`!**")
 
+
   if isinstance(error, commands.BadArgument):
-    await ctx.send("**Bad argument!**")
+    await ctx.send("**Invalid parameters!**")
 
   if isinstance(error, commands.CommandOnCooldown):
     secs = error.retry_after
