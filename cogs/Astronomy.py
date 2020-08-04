@@ -699,6 +699,53 @@ class Astronomy(commands.Cog):
       await ctx.send(embed=embed)
     except Exception as error:
       return await ctx.send("**I can't work with these cords!**")
+
+
+  @commands.command()
+  @commands.cooldown(1, 10, type=commands.BucketType.user)
+  async def iss(self, ctx):
+    '''
+    Shows information related to ISS' location.
+    '''
+
+    root = 'https://api.wheretheiss.at/v1/satellites/25544'
+    root2 = 'https://api.wheretheiss.at/v1/coordinates'
+    async with self.session.get(root) as response:
+      if not response.status == 200:
+        return await ctx.send("**For some reason I couldn't do it! Try again later**")
+      data = json.loads(await response.read())
+
+    async with self.session.get(f"{root2}/{data['latitude']},{data['longitude']}") as response:
+      if not response.status == 200:
+        return await ctx.send("**For some reason I couldn't do it! Try again later**")
+      cords = await response.read()
+      cords = json.loads(cords)
+      location = f"{cords['timezone_id']} ({cords['country_code']})"
+
+    embed = discord.Embed(
+    title="__Internation Space Station (ISS)__",
+    description="Current information about ISS' location.",
+    color=ctx.author.color,
+    url=cords['map_url'],
+    timestamp=datetime.fromtimestamp(data['timestamp'])
+    )
+    embed.add_field(
+    name="@ `Geographical Status`",
+    value=f'''```apache\nLatitude: {data['latitude']}\nLongitude: {data['longitude']}\nAltitude: {data['altitude']}\nLocation: {location}```''', inline=False
+    )
+    embed.add_field(
+    name="@ `General Status`",
+    value=f'''```apache\nVelocity: {data['velocity']}\nVisibility: {data['visibility']}\nDaynum: {data['daynum']}\nFootprint: {data['footprint']}```''', inline=False
+    )
+
+    embed.add_field(
+    name="@ `Solar status`",
+    value=f'''```apache\nSolar latitude: {data['solar_lat']}\nSolar longitude: {data['solar_lon']}```''', inline=False
+    )
+    embed.set_footer(
+    text=f"Units: {data['units']}"
+    )
+    await ctx.send(embed=embed)
 def setup(client):
   #client.add_command(help)
   client.add_cog(Astronomy(client))
