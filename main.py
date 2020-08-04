@@ -282,6 +282,22 @@ async def reload_all(ctx):
       pass
   await ctx.send(f"**Cogs reloaded!**")
 
+@client.command()
+async def support(ctx):
+  '''
+  Support for the bot and its commands.
+  '''
+  link = 'https://discord.gg/6GXvrck'
+
+  embed = discord.Embed(
+  title="__Support__",
+  description=f"For any support; in other words, questions, suggestions or doubts concerning the bot and its commands, contact me **DNK#6725**, or join our support server by clicking [here]({link})",
+  timestamp=ctx.message.created_at,
+  url=link,
+  color=ctx.author.color
+  )
+  await ctx.send(embed=embed)
+
 
 for file_name in os.listdir('./cogs'):
   if str(file_name).endswith(".py"):
