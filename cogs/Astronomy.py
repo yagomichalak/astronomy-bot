@@ -716,17 +716,23 @@ class Astronomy(commands.Cog):
       data = json.loads(await response.read())
 
     async with self.session.get(f"{root2}/{data['latitude']},{data['longitude']}") as response:
-      if not response.status == 200:
-        return await ctx.send("**For some reason I couldn't do it! Try again later**")
-      cords = await response.read()
-      cords = json.loads(cords)
-      location = f"{cords['timezone_id']} ({cords['country_code']})"
+      print(data['latitude'])
+      print(data['longitude'])
+      print(f"{root2}/{data['latitude']},{data['longitude']}")
+      if response.status == 200:
+        cords = await response.read()
+        cords = json.loads(cords)
+        location = f"{cords['timezone_id']} ({cords['country_code']})"
+        map_url = cords['map_url']
+      else:
+        location = '?'
+        map_url = None
 
     embed = discord.Embed(
     title="__Internation Space Station (ISS)__",
     description="Current information about ISS' location.",
     color=ctx.author.color,
-    url=cords['map_url'],
+    url=map_url,
     timestamp=datetime.fromtimestamp(data['timestamp'])
     )
     embed.add_field(
