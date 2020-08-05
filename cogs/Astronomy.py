@@ -716,9 +716,6 @@ class Astronomy(commands.Cog):
       data = json.loads(await response.read())
 
     async with self.session.get(f"{root2}/{data['latitude']},{data['longitude']}") as response:
-      print(data['latitude'])
-      print(data['longitude'])
-      print(f"{root2}/{data['latitude']},{data['longitude']}")
       if response.status == 200:
         cords = await response.read()
         cords = json.loads(cords)
@@ -752,6 +749,118 @@ class Astronomy(commands.Cog):
     text=f"Units: {data['units']}"
     )
     await ctx.send(embed=embed)
+
+
+  @commands.command(aliases=['ul', 'upcoming', 'launches'])
+  @commands.has_permissions(administrator=True)
+  async def upcoming_launches(self, ctx):
+    '''
+    Shows information about upcoming launches.
+    '''
+    link = 'https://ll.thespacedevs.com/2.0.0/launch/upcoming/?format=json&limit=10&offset=10'
+
+    async with self.session.get(link) as response:
+        info = json.loads(await response.read())
+        info = info['results']
+
+    index = 0
+    launch_msg = await ctx.send(embed=discord.Embed(title='🚀'))
+
+    def check(reaction, user):
+      return str(reaction.message.id) == str(launch_msg.id) and user == ctx.author and str(reaction.emoji) in ['⬅️', '➡️']
+
+    await asyncio.sleep(0.5)
+    while True:
+      lensa = len(info)
+      data = info[index]
+      embed = discord.Embed(
+      title=f"{data['name']} ({index+1}/{lensa})",
+      color=ctx.author.color
+      )
+      try:
+        embed.add_field(
+        name="__`General`__",
+        value=f'''
+        **Window start:** {data['window_start']}
+        **Window end:** {data['window_end']}
+        **Inhold:** {data['inhold']}
+        **Time TBD:** {data['tbdtime']}
+        **Date TBD:** {data['tbddate']}
+        **Probability:** {data['probability']}
+        ''', inline=True)
+      except Exception:
+        pass
+      try:
+        embed.add_field(
+        name="__`Launch service provider`__", 
+        value=f'''
+        **ID:** {data['launch_service_provider']['id']}
+        **Name:** {data['launch_service_provider']['name']}
+        **Type:** {data['launch_service_provider']['type']}
+        ''', inline=True)
+      except Exception:
+        pass
+      try:
+        embed.add_field(
+        name="__`Rocket`__", 
+        value=f'''
+        **ID:** {data['rocket']['id']}
+        **Config. ID:** {data['rocket']['configuration']['id']}
+        **Name:** {data['rocket']['configuration']['name']}
+        **Family:** {data['rocket']['configuration']['family']}
+        **Full name:** {data['rocket']['configuration']['full_name']}
+        **Variant:** {data['rocket']['configuration']['variant']}
+        ''', inline=True)
+      except Exception:
+        pass
+
+      try:
+        embed.add_field(
+        name="__`Mission`__", 
+        value=f'''
+        **ID:** {data['mission']['id']}
+        **Name:** {data['mission']['name']}
+        **Type:** {data['mission']['type']}
+        ''',  inline=True)
+        embed.description=f"```{data['mission']['description']}```"
+      except Exception:
+        pass
+
+
+      embed.add_field(
+      name="__`Pad`__", 
+      value=f'''
+      **ID:** {data['pad']['id']}
+      **Name:** {data['pad']['name']}
+      **Wiki:** [here]({data['pad']['wiki_url']})
+      **Latitude:** {data['pad']['latitude']}
+      **Longitude:** {data['pad']['longitude']}
+      **Location ID:** {data['pad']['location']['id']}
+      **Location name:** {data['pad']['location']['name']} ([map]({data['pad']['map_url']}))
+      ''',  inline=True)
+      embed.set_image(url=data['image'])
+      embed.set_thumbnail(url=data['pad']['map_image'])
+      await launch_msg.edit(embed=embed)
+      await launch_msg.add_reaction('⬅️')
+      await launch_msg.add_reaction('➡️')
+      try:
+        reaction, user = await self.client.wait_for('reaction_add', timeout=60, check=check)
+      except asyncio.TimeoutError:
+        await launch_msg.remove_reaction('⬅️', self.client.user)
+        await launch_msg.remove_reaction('➡️', self.client.user)
+        break
+      else:
+        if str(reaction.emoji) == "➡️":
+            await launch_msg.remove_reaction(reaction.emoji, user)
+            if index + 1 < lensa:
+                index += 1
+            continue
+        elif str(reaction.emoji) == "⬅️":
+            await launch_msg.remove_reaction(reaction.emoji, user)
+            if index > 0:
+                index -= 1
+            continue
+
 def setup(client):
   #client.add_command(help)
   client.add_cog(Astronomy(client))

@@ -34,7 +34,7 @@ class NASA(commands.Cog):
         embed.set_image(url=data['url'])
         embed.set_footer(text=data['copyright'])
       except Exception:
-        return await ctx.send("**It seems we don't have one pictue for today yet!**")
+        return await ctx.send("**It seems we don't have one picture for today yet!**")
       else:
         await ctx.send(embed=embed)
 
