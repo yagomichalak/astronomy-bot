@@ -123,7 +123,45 @@ class NASA(commands.Cog):
 
         await ctx.send(embed=embed)
 
+  @commands.command(aliases=['ep', 'exo', 'xplanet'])
+  @commands.cooldown(1, 10, type=commands.BucketType.user)
+  async def exoplanet(self, ctx, index: int = None):
+    '''
+    Gets some information about an exoplanet, when given an index in the scope of the amount of exoplanets available in the database.
+    '''
+    root = 'https://exoplanetarchive.ipac.caltech.edu/cgi-bin/nstedAPI/nph-nstedAPI?table=exoplanets&format=json'
+    async with ctx.typing():
+      async with self.session.get(root) as response:
+          data = json.loads(await response.read())
+          lenex = len(data)
 
+    if index is None:
+      return await ctx.send(f"**{ctx.author.mention}, {lenex-1} exoplanets were found in our database, please, provide a number between 0 and {lenex-1}!\nEx: o!exoplanet `74`.**")
+
+    if index < 0 or index > lenex -1:
+      return await ctx.send(f"**{ctx.author.mention}, please, inform a number between 0 and {lenex}.**")
+
+
+    data = data[index]
+    embed = discord.Embed(
+    title=f"Exoplanet -> {data['pl_hostname']}",
+    description=f"Showing the exoplanet of index {index} out of {lenex}.",
+    color=ctx.author.color,
+    timestamp=ctx.message.created_at
+    )
+
+    embed.add_field(
+        name="`Planets Columns`",
+        value=f'''```apache\nPlanet Name: {data['pl_name']}\nPlanet Letter: {data['pl_letter']}\nDiscovery Method: {data['pl_discmethod']}\nControversial flag: {'yes' if data['pl_controvflag'] else 'no'}\nPlanets in the system: {data['pl_pnum']}\nOribt Period (days): {data['pl_orbper']}\nOrbit Semi-Major Axis (au): {data['pl_orbsmax']}\nEccentricity: {data['pl_orbeccen']}\nInclination (deg): {data['pl_orbincl']}\nPlanet Mass or M*sin(i) (Jupiter mass): {data['pl_bmassj']}\nPlanet Mass or M*sin(i) Provenance: {data['pl_bmassprov']}\nPlanet Radius (Jupiter radii): {data['pl_radj']}\nPlanet Density (g/cm*\*3): {data['pl_dens']}\nTTV Flag: {'yes' if data['pl_ttvflag'] else 'no'}\nKepler Field Flag: {'yes' if data['pl_kepflag'] else 'no'}\nK2 Mission Flag: {'yes' if data['pl_k2flag'] else 'no'}\nNumber of Notes: {data['pl_nnotes']}```''', inline=False
+        )
+
+    embed.add_field(
+    name="`Stellar Columns`",
+    value=f'''```apache\nDistance (pc): {data['st_dist']}\nOptical Magnitude:** {data['st_optmag']}\nOptical Magnitude Band: {data['st_optband']}\nEffective Temperature (K): {data['st_teff']}\nStellar Mass (solar mass): {data['st_mass']}\nG-band (Gaia) (mag): {data['gaia_gmag']}```''', inline=False
+    )
+
+    embed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar_url)
+    await ctx.send(embed=embed)
 
 def setup(client):
   client.add_cog(NASA(client))

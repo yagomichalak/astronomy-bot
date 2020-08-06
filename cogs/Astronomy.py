@@ -752,7 +752,6 @@ class Astronomy(commands.Cog):
 
 
   @commands.command(aliases=['ul', 'upcoming', 'launches'])
-  @commands.has_permissions(administrator=True)
   async def upcoming_launches(self, ctx):
     '''
     Shows information about upcoming launches.
