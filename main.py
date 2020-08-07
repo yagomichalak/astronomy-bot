@@ -3,6 +3,7 @@ from discord.ext import commands, tasks
 import keep_alive
 import os
 from itertools import cycle
+from re import match
 
 client = commands.Bot(command_prefix='o!')
 client.remove_command('help')
@@ -82,6 +83,17 @@ async def on_guild_remove(guild):
   guild_log = client.get_channel(int(on_guild_log_id))
   if guild_log:
     await guild_log.send(embed=embed)
+
+@client.event
+async def on_message(message):
+  if message.author.bot:
+    return
+
+  if match(f"<@!?{client.user.id}>", message.content) is not None:
+    await message.channel.send(f"**{message.author.mention}, my prefix is `{client.command_prefix}`**")
+
+  await client.process_commands(message)
+  
 
 
 @tasks.loop(seconds=30)

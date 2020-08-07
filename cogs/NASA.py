@@ -128,6 +128,7 @@ class NASA(commands.Cog):
   async def exoplanet(self, ctx, index: int = None):
     '''
     Gets some information about an exoplanet, when given an index in the scope of the amount of exoplanets available in the database.
+    :param index: The index of the exoplanet.
     '''
     root = 'https://exoplanetarchive.ipac.caltech.edu/cgi-bin/nstedAPI/nph-nstedAPI?table=exoplanets&format=json'
     async with ctx.typing():
