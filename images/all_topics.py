@@ -31,7 +31,7 @@ image_links = {
   "Artemis":
   ["https://cdn.discordapp.com/attachments/719020754858934294/724784760219631660/artemis.png", "https://en.wikipedia.org/wiki/Artemis_program"],
   'Sun': ["https://cdn.discordapp.com/attachments/719020754858934294/722525849282412564/sun.png", "https://en.wikipedia.org/wiki/Sun"],
-  'Mercury': ["https://cdn.discordapp.com/attachments/719020754858934294/722519380914602145/mercury.png", "https://en.wikipedia.org/wiki/Mercury_(planet)"],
+  'Mercury': ["https://cdn.discordapp.com/attachments/719020754858934294/722525911794057256/mercury.png", "https://en.wikipedia.org/wiki/Mercury_(planet)"],
   'Venus': ["https://cdn.discordapp.com/attachments/719020754858934294/722530732907429988/venus.png", "https://en.wikipedia.org/wiki/Venus"],
   'Earth': ["https://cdn.discordapp.com/attachments/719020754858934294/722530931986137148/earth.png", "https://en.wikipedia.org/wiki/Earth"],
   'Mars': ["https://cdn.discordapp.com/attachments/719020754858934294/722535108510220368/mars.png", "https://en.wikipedia.org/wiki/Mars"],
@@ -47,7 +47,7 @@ image_links = {
 
 sun = {
 'Sun': ["https://cdn.discordapp.com/attachments/719020754858934294/722525849282412564/sun.png", "https://en.wikipedia.org/wiki/Sun"],
-'Mercury': ["https://cdn.discordapp.com/attachments/719020754858934294/722519380914602145/mercury.png", "https://en.wikipedia.org/wiki/Mercury_(planet)"],
+'Mercury': ["https://cdn.discordapp.com/attachments/719020754858934294/722525911794057256/mercury.png", "https://en.wikipedia.org/wiki/Mercury_(planet)"],
 'Venus': ["https://cdn.discordapp.com/attachments/719020754858934294/722530732907429988/venus.png", "https://en.wikipedia.org/wiki/Venus"],
 'Earth': ["https://cdn.discordapp.com/attachments/719020754858934294/722530931986137148/earth.png", "https://en.wikipedia.org/wiki/Earth"],
 'Mars': ["https://cdn.discordapp.com/attachments/719020754858934294/722535108510220368/mars.png", "https://en.wikipedia.org/wiki/Mars"],

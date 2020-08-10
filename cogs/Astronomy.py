@@ -968,6 +968,66 @@ class Astronomy(commands.Cog):
             #await the_msg.remove_reaction(reaction.emoji, member)
             if index > 0:
                 index -= 1
+
+  @commands.command()
+  @commands.cooldown(1, 10, commands.BucketType.user)
+  async def location(self, ctx, country_code: str = ''):
+    '''
+    Shows launch and landing status about some locations.
+    :param country_code: The acronym of the country (e.g = USA).
+    '''
+
+    root = 'https://ll.thespacedevs.com/2.0.0/location'
+
+    async with self.session.get(f"{root}/?country_code={country_code.upper()}") as response:
+      if response.status == 200:
+        response = json.loads(await response.read())['results']
+        lenlo = len(response)
+        if not lenlo:
+          return await ctx.send("**No results found for this country!**")
+      else:
+        return await ctx.send("**I can't work with this country code!**")
+
+    index = 0
+    the_msg = await ctx.send(embed=discord.Embed(title='🗺️'))
+
+    def check(r, u):
+      return u == ctx.author and str(r.message.id) == str(the_msg.id) and str(r.emoji) in ['⬅️', '➡️']
+
+    await asyncio.sleep(1)
+    await the_msg.add_reaction('⬅️')
+    await the_msg.add_reaction('➡️')
+
+    while True:
+      data = response[index]
+      embed = discord.Embed(
+      title=f"{data['name']} ({index + 1}/{lenlo})",
+      description=f'''
+      **Coutry Code:** {data['country_code']}
+      **Total Launch Count:** {data['total_launch_count']}
+      **Total Landing Count:** {data['total_landing_count']}
+      ''', color=ctx.author.color, timestamp=ctx.message.created_at)
+
+      embed.set_image(url=data['map_image'])
+      embed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar_url)
+
+      await the_msg.edit(embed=embed)
+      try:
+        reaction, member = await self.client.wait_for('reaction_add', timeout=60, check=check)
+      except asyncio.TimeoutError:
+        await the_msg.remove_reaction('➡️', self.client.user)
+        await the_msg.remove_reaction('⬅️', self.client.user)
+      else:
+        await the_msg.remove_reaction(reaction.emoji, member)
+        if str(reaction.emoji) == '➡️' :
+          if index < lenlo -1:
+            index += 1
+          continue
+        elif str(reaction.emoji) == '⬅️':
+          if index > 0:
+            index -= 1
+          continue
+
 def setup(client):
   #client.add_command(help)
   client.add_cog(Astronomy(client))
