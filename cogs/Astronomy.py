@@ -974,7 +974,7 @@ class Astronomy(commands.Cog):
   async def location(self, ctx, country_code: str = ''):
     '''
     Shows launch and landing status about some locations.
-    :param country_code: The acronym of the country (e.g = USA).
+    :param country_code: The acronym of the country (e.g = USA)[Optional].
     '''
 
     root = 'https://ll.thespacedevs.com/2.0.0/location'

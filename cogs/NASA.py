@@ -39,7 +39,7 @@ class NASA(commands.Cog):
       try:
         await ctx.send(embed=embed)
       except Exception:
-        return await ctx.send("**It seems we don't have one picture for today yet!**")
+        return await ctx.send("**It seems we don't have a picture for today yet!**")
 
   @commands.command(aliases=['s', 'google'])
   async def search(self, ctx, *, topic: str = None):
