@@ -16,6 +16,10 @@ class NASA(commands.Cog):
     self.client = client
     self.token = os.getenv('NASA_API_TOKEN')
     self.session = aiohttp.ClientSession(loop=client.loop)
+
+  @commands.Cog.listener()
+  async def on_ready(self):
+    print('NASA cog is online!')
   
 
   @commands.command()
@@ -30,10 +34,13 @@ class NASA(commands.Cog):
     else:
       data = json.loads(response.text)
       try:
-        embed = discord.Embed(title=data['title'], description=data['explanation'], color=ctx.author.color, timestamp=datetime.strptime(data['date'], '%Y-%m-%d'), url=data['hdurl'])
+        embed = discord.Embed(title=data['title'], description=data['explanation'], color=ctx.author.color, timestamp=datetime.strptime(data['date'], '%Y-%m-%d'))
+        if hdurl := data.get('hdurl'):
+          embed.url=hdurl
         embed.set_image(url=data['url'])
-        embed.set_footer(text=data['copyright'])
-      except Exception:
+        if copyright := data['copyright']:
+          embed.set_footer(text=copyright)
+      except Exception as error:
         pass
 
       try:
@@ -109,22 +116,23 @@ class NASA(commands.Cog):
     root = "https://api.nasa.gov/insight_weather/?api_key=DEMO_KEY&feedtype=json&ver=1.0"
 
     try:
-        response = requests.get(root)
+      response = requests.get(root)
     except Exception as error:
-        print(error)
+      print(error)
     else:
-        all_data = json.loads(response.text)
-        days = list(all_data.keys())[:-2]
-        embed = discord.Embed(
-            title="Mars Weather (F°)",
-            description="Mars' air temperature of the last 7 days", 
-            color=ctx.author.color)
-        for day in days:
-            sol = day
-            day = all_data[day]
-            embed.add_field(name=f":sunny: Sol ({sol})", value=f"```ini\n[Max]: {day['AT']['mx']}\n[Min]: {day['AT']['mn']}\n[First UTC]: {day['First_UTC']}\n[Last UTC]: {day['Last_UTC']}```", inline=True)
-
-        await ctx.send(embed=embed)
+      all_data = json.loads(response.text)
+      days = list(all_data.keys())[:-2]
+      embed = discord.Embed(
+          title="Mars Weather (F°)",
+          description="Mars' air temperature of the last 7 days", 
+          color=ctx.author.color)
+      for day in days:
+        sol = day
+        day = all_data[day]
+        embed.add_field(name=f":sunny: Sol ({sol})", value=f"```ini\n[Max]: {day['AT']['mx']}\n[Min]: {day['AT']['mn']}\n[First UTC]: {day['First_UTC']}\n[Last UTC]: {day['Last_UTC']}```", inline=True)
+        return await ctx.send(embed=embed)
+      else:
+        await ctx.send(content="**It looks like we don't have the last 7 days Mars Weather... Sorry!**")
 
   @commands.command(aliases=['ep', 'exo', 'xplanet'])
   @commands.cooldown(1, 10, type=commands.BucketType.user)
