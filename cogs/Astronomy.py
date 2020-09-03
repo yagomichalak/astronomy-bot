@@ -826,20 +826,36 @@ class Astronomy(commands.Cog):
       except Exception:
         pass
 
+      try:
+        embed.add_field(
+        name="__`Pad`__", 
+        value=f'''
+        **ID:** {data['pad']['id']}
+        **Name:** {data['pad']['name']}
+        **Wiki:** [here]({data['pad']['wiki_url']})
+        **Latitude:** {data['pad']['latitude']}
+        **Longitude:** {data['pad']['longitude']}
+        **Location ID:** {data['pad']['location']['id']}
+        **Location name:** {data['pad']['location']['name']} ([map]({data['pad']['map_url']}))
+        ''',  inline=True)
+      except Exception:
+        print('a')
+        pass
 
-      embed.add_field(
-      name="__`Pad`__", 
-      value=f'''
-      **ID:** {data['pad']['id']}
-      **Name:** {data['pad']['name']}
-      **Wiki:** [here]({data['pad']['wiki_url']})
-      **Latitude:** {data['pad']['latitude']}
-      **Longitude:** {data['pad']['longitude']}
-      **Location ID:** {data['pad']['location']['id']}
-      **Location name:** {data['pad']['location']['name']} ([map]({data['pad']['map_url']}))
-      ''',  inline=True)
-      embed.set_image(url=data['image'])
-      embed.set_thumbnail(url=data['pad']['map_image'])
+
+      if image := data['image']:
+        try:
+          embed.set_image(url=image)
+        except Exception:
+          pass
+
+      if thumb := data['pad']['map_image']:
+        try:
+          embed.set_thumbnail(url=thumb)
+        except Exception:
+          print('a')
+          pass
+
       await launch_msg.edit(embed=embed)
       await launch_msg.add_reaction('⬅️')
       await launch_msg.add_reaction('➡️')

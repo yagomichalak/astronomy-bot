@@ -8,7 +8,7 @@ A simple informative Discord bot.
 
 - You can see all space agencies (88) around the world with a simple command.
 
-- A special list with 33 movies about astronomy and space in genera.
+- A special list with 33 movies about astronomy and space in general.
 
 - Global level ranking system, universe themed.
 

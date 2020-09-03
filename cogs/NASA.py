@@ -151,7 +151,7 @@ class NASA(commands.Cog):
       return await ctx.send(f"**{ctx.author.mention}, {lenex-1} exoplanets were found in our database, please, provide a number between 0 and {lenex-1}!\nEx: o!exoplanet `74`.**")
 
     if index < 0 or index > lenex -1:
-      return await ctx.send(f"**{ctx.author.mention}, please, inform a number between 0 and {lenex}.**")
+      return await ctx.send(f"**{ctx.author.mention}, please, inform a number between 0 and {lenex-1}.**")
 
 
     data = data[index]
