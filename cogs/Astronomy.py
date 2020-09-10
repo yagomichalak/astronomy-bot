@@ -112,6 +112,7 @@ class Astronomy(commands.Cog):
     mycursor.execute("CREATE TABLE Universe (user_id INTEGER, user_lvl INTEGER default 1, user_xp INTEGER default 0, user_ts INTEGER default 0)")
     db.commit()
     mycursor.close()
+    db.close()
     return await ctx.send("**Table __Universe__ created!**")
 
   @commands.command(hidden=True)
@@ -124,6 +125,7 @@ class Astronomy(commands.Cog):
     mycursor.execute("DROP TABLE Universe")
     db.commit()
     mycursor.close()
+    db.close()
     return await ctx.send("**Table __Universe__ dropped!**")
 
   @commands.command(hidden=True)
@@ -136,6 +138,7 @@ class Astronomy(commands.Cog):
     mycursor.execute("DELETE FROM Universe")
     db.commit()
     mycursor.close()
+    db.close()
     return await ctx.send("**Table __Universe__ reset!**")
 
   async def table_exists(self):
@@ -143,6 +146,7 @@ class Astronomy(commands.Cog):
     mycursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='Universe'")
     table_info = mycursor.fetchall()
     mycursor.close()
+    db.close()
     if len(table_info) == 0:
         return False
     else:
@@ -154,7 +158,7 @@ class Astronomy(commands.Cog):
     mycursor.execute(f"INSERT INTO Universe (user_id) VALUES ({user_id})")
     db.commit()
     mycursor.close()
-    pass
+    db.close()
 
   async def update_data(self, user: discord.Member, the_time: int, channel):
     user_id = user.id
@@ -169,12 +173,14 @@ class Astronomy(commands.Cog):
     mycursor.execute(f"UPDATE Universe SET user_ts = {the_time} WHERE user_id = {user_id}")
     db.commit()
     mycursor.close()
+    db.close()
 
   async def update_user_xp(self, user_id: int, the_xp: int):
     mycursor, db = await self.the_database()
     mycursor.execute(f"UPDATE Universe SET user_xp = user_xp + {the_xp} WHERE user_id = {user_id}")
     db.commit()
     mycursor.close()
+    db.close()
 
 
   async def check_user(self, user_id: int):
@@ -183,6 +189,7 @@ class Astronomy(commands.Cog):
     #changed
     user = mycursor.fetchall()
     mycursor.close()
+    db.close()
     if user:
       return True
     else:
@@ -193,6 +200,7 @@ class Astronomy(commands.Cog):
     mycursor.execute(f"SELECT * FROM Universe WHERE user_id = {user_id}")
     the_user = mycursor.fetchall()
     mycursor.close()
+    db.close()
     #changed2
     if the_user:
       return the_user
@@ -217,6 +225,7 @@ class Astronomy(commands.Cog):
     mycursor.execute(f"UPDATE Universe SET user_lvl = {user_lvl} WHERE user_id = {user_id}")
     db.commit()
     mycursor.close()
+    db.close()
 
   @commands.command()
   async def profile(self, ctx, member: discord.Member = None) -> object:
@@ -320,6 +329,7 @@ class Astronomy(commands.Cog):
     mycursor.execute('SELECT * FROM Universe ORDER BY user_xp DESC limit 10')
     users = mycursor.fetchall()
     mycursor.close()
+    db.close()
     return users
 
   @commands.command()
@@ -365,6 +375,7 @@ class Astronomy(commands.Cog):
     mycursor.execute("CREATE TABLE AllowedGuilds (guild_id INTEGER NOT NULL)")
     db.commit()
     mycursor.close()
+    db.close()
     return await ctx.send("**Table __AllowedGuilds__ created!**")
 
   @commands.command(hidden=True)
@@ -380,6 +391,7 @@ class Astronomy(commands.Cog):
     mycursor.execute("DROP TABLE AllowedGuilds")
     db.commit()
     mycursor.close()
+    db.close()
     return await ctx.send("**Table __AllowedGuilds__ dropped!**")
 
   @commands.command(hidden=True)
@@ -395,6 +407,7 @@ class Astronomy(commands.Cog):
     mycursor.execute("DELETE FROM AllowedGuilds")
     db.commit()
     mycursor.close()
+    db.close()
     return await ctx.send("**Table __AllowedGuilds__ reset!**")
 
   async def table_allowed_guilds_exists(self):
@@ -402,6 +415,7 @@ class Astronomy(commands.Cog):
     mycursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='AllowedGuilds'")
     table_info = mycursor.fetchall()
     mycursor.close()
+    db.close()
     if len(table_info) == 0:
         return False
     else:
@@ -412,18 +426,21 @@ class Astronomy(commands.Cog):
     mycursor.execute(f"INSERT INTO AllowedGuilds (guild_id) VALUES ({gid})")
     db.commit()
     mycursor.close()
+    db.close()
   
   async def remove_allowed_server(self, gid: int):
     mycursor, db = await self.the_database()
     mycursor.execute(f"DELETE FROM AllowedGuilds WHERE guild_id = {gid}")
     db.commit()
     mycursor.close()
+    db.close()
 
   async def allowed_server(self, gid: int):
     mycursor, db = await self.the_database()
     mycursor.execute(f"SELECT * FROM AllowedGuilds WHERE guild_id = {gid}")
     the_guild = mycursor.fetchall()
     mycursor.close()
+    db.close()
     if len(the_guild) > 0:
       return True
     else:
