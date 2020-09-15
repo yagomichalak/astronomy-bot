@@ -15,6 +15,8 @@ A simple informative Discord bot.
 - Minigames;
   - quiz, space_traveling.
 
+- A wide variety of API consummation;
+
 # Quick Note
 
 - The bot's token should be stored in a .env
