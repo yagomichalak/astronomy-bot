@@ -5,7 +5,7 @@ import os
 from itertools import cycle
 from re import match
 
-intents = discord.Intents().all()
+intents = discord.Intents.default()
 client = commands.Bot(command_prefix='o!', intents=intents)
 client.remove_command('help')
 token = os.getenv('TOKEN')
@@ -101,7 +101,8 @@ async def on_message(message):
 async def in_servers():
   ns = next(status)
   if ns == 'member':
-    ns = f"for {len([x for l in [g.members for g in client.guilds] for x in l])} users!"
+    # ns = f"for {len([x for l in [g.members for g in client.guilds] for x in l])} users!"
+    ns = 'for the humanity!'
 
   elif ns == 'server':
     ns = f"on {len(client.guilds)} servers!"
