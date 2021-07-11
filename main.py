@@ -4,6 +4,8 @@ import keep_alive
 import os
 from itertools import cycle
 from re import match
+from dotenv import load_dotenv
+load_dotenv()
 
 intents = discord.Intents.default()
 client = commands.Bot(command_prefix='o!', intents=intents)
