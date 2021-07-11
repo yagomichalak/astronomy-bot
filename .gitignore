@@ -3,3 +3,6 @@ venv/
 universe.db
 poetry.lock
 pyproject.toml
+.vs/
+.idea/
+**/__pycache__/

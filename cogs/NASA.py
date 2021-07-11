@@ -145,7 +145,7 @@ class NASA(commands.Cog):
 		async with ctx.typing():
 			async with self.session.get(root) as response:
 				json_data = await response.read()
-				data = json_data.decode('utf-8')
+				data = json.loads(json_data[537:])
 				lenex = len(data)
 				
 
