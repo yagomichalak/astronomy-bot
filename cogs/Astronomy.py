@@ -34,21 +34,21 @@ class Astronomy(commands.Cog):
   async def on_ready(self):
     print("Astronomy cog is online!")
   
-  @commands.Cog.listener()
-  async def on_message(self, message):
-    if message.author.bot:
-      return
+  # @commands.Cog.listener()
+  # async def on_message(self, message):
+  #   if message.author.bot:
+  #     return
     
-    if not await self.table_exists():
-      return
+  #   if not await self.table_exists():
+  #     return
 
-    epoch = datetime.utcfromtimestamp(0)
-    time_xp = (datetime.utcnow() - epoch).total_seconds()
+  #   epoch = datetime.utcfromtimestamp(0)
+  #   time_xp = (datetime.utcnow() - epoch).total_seconds()
 
-    if not await self.check_user(message.author.id):
-      await self.insert_user(message.author.id)
+  #   if not await self.check_user(message.author.id):
+  #     await self.insert_user(message.author.id)
 
-    await self.update_data(message.author, time_xp, message.channel)
+  #   await self.update_data(message.author, time_xp, message.channel)
 
   async def read_topic(self, topic: str) -> list:
     with open(f"./texts/{topic}.txt", "r") as f:
@@ -227,26 +227,26 @@ class Astronomy(commands.Cog):
     mycursor.close()
     db.close()
 
-  @commands.command()
-  async def profile(self, ctx, member: discord.Member = None) -> object:
-    '''
-    Shows your astronomical profile.
-    '''
-    if not member:
-      member = ctx.author
+  # @commands.command()
+  # async def profile(self, ctx, member: discord.Member = None) -> object:
+  #   '''
+  #   Shows your astronomical profile.
+  #   '''
+  #   if not member:
+  #     member = ctx.author
     
-    the_user = await self.get_user(member.id)
-    if not the_user:
-      return await ctx.send(f"**{member} doesn't have a profile yet!**")
-    astro = await self.get_astro(the_user[0][1], galaxy)
-    embed = discord.Embed(title="__Profile__", colour=member.color, timestamp=ctx.message.created_at, url=astro[1][1])
-    embed.add_field(name="__**Rank**__", value=f"{astro[0]}.", inline=False)
-    embed.add_field(name="__**EXP**__", value=f"{the_user[0][2]} / {((the_user[0][1]+1)**5)}.", inline=False)
-    embed.set_thumbnail(url=astro[1][0])
-    embed.set_footer(text=f"{member}", icon_url=member.avatar_url)
-    #embed.set_image(url='https://cdn.discordapp.com/attachments/719020754858934294/722519380914602145/mercury.png')
-    #{user[0][1]} / {((user[0][2]+1)**5)}."
-    return await ctx.send(embed=embed)
+  #   the_user = await self.get_user(member.id)
+  #   if not the_user:
+  #     return await ctx.send(f"**{member} doesn't have a profile yet!**")
+  #   astro = await self.get_astro(the_user[0][1], galaxy)
+  #   embed = discord.Embed(title="__Profile__", colour=member.color, timestamp=ctx.message.created_at, url=astro[1][1])
+  #   embed.add_field(name="__**Rank**__", value=f"{astro[0]}.", inline=False)
+  #   embed.add_field(name="__**EXP**__", value=f"{the_user[0][2]} / {((the_user[0][1]+1)**5)}.", inline=False)
+  #   embed.set_thumbnail(url=astro[1][0])
+  #   embed.set_footer(text=f"{member}", icon_url=member.avatar_url)
+  #   #embed.set_image(url='https://cdn.discordapp.com/attachments/719020754858934294/722519380914602145/mercury.png')
+  #   #{user[0][1]} / {((user[0][2]+1)**5)}."
+  #   return await ctx.send(embed=embed)
 
   @commands.command()
   async def source(self, ctx, command: str = None):
@@ -331,35 +331,6 @@ class Astronomy(commands.Cog):
     mycursor.close()
     db.close()
     return users
-
-  @commands.command()
-  @commands.has_permissions(administrator=True)
-  async def disable_levels(self, ctx):
-    '''
-    Disables leveling up messages for a specific server.
-    '''
-    if not await self.table_allowed_guilds_exists():
-      return await ctx.send("**This feature is on maintenance!**")
-
-    if await self.allowed_server(ctx.guild.id):
-      await self.remove_allowed_server(ctx.guild.id)
-      await ctx.send("**Levels disabled again for this server!**")
-    else:
-      await ctx.send("**Levels are already disabled for this server!**")
-
-  @commands.command()
-  @commands.has_permissions(administrator=True)
-  async def enable_levels(self, ctx):
-    '''
-    Enables leveling up messages for a specific server.
-    '''
-    if not await self.table_allowed_guilds_exists():
-      return await ctx.send("**This feature is on maintenance!**")
-    if not await self.allowed_server(ctx.guild.id):
-      await self.insert_allowed_server(ctx.guild.id)
-      await ctx.send("**Levels enabled for this server!**")
-    else:
-      await ctx.send("**Levels are already enabled for this server!**")
   
   # Database commands
   @commands.command(hidden=True)

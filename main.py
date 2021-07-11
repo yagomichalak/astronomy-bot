@@ -333,6 +333,6 @@ for file_name in os.listdir('./cogs'):
     client.load_extension(f"cogs.{file_name[:-3]}")
     
 
-keep_alive.keep_alive()
+# keep_alive.keep_alive()
 
 client.run(token)
