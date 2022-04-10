@@ -73,25 +73,24 @@ class Astronomy(commands.Cog):
 
 		await ctx.respond(embed=the_universe)
 
-	@slash_command(guild_ids=TEST_GUILDS)
-	async def what_is(self, ctx, topic: str = None) -> None:
-		""" Shows some information about the given topic.
-		:param topic: The topic to show. """
+	@slash_command()
+	async def what_is(self, ctx, 
+		topic: Option(str, name="topic", description="The topic to show.", required=True)
+	 ) -> None:
+		""" Shows some information about the given topic. """
 
 		await ctx.defer()
-
-		if not topic:
-			return await ctx.send("**Please, inform a topic!**")
 		
 		if not topic.title() in topics:
-			return await ctx.send(f"**`{topic.title()}` is not a topic that I cover!**")
+			return await ctx.respond(f"**`{topic.title()}` is not a topic that I cover!**")
 
+		current_time = await utils.get_time_now()
 		result = await self.read_topic(topic.title())
 		links = image_links[topic.title()]
 		embed = discord.Embed(
 			title=f"({topic.title()})",
 			color=discord.Color.dark_purple(),
-			timestamp=ctx.message.created_at,
+			timestamp=current_time,
 			url=links[1]
 		)
 		embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon.url)
@@ -101,7 +100,7 @@ class Astronomy(commands.Cog):
 		embed.set_footer(text=f"Requested by: {ctx.author.name}", icon_url=ctx.author.display_avatar)
 		await ctx.respond(embed=embed)
 
-	@slash_command(guild_ids=TEST_GUILDS)
+	@slash_command()
 	async def random(self, ctx):
 		""" Fetches a random topic from the system. """
 
@@ -321,7 +320,7 @@ class Astronomy(commands.Cog):
 				embed.set_footer(text="Page {}".format(num))
 				await ctx.send(embed=embed)
 
-	@slash_command(guild_ids=TEST_GUILDS)
+	@slash_command()
 	@commands.cooldown(1, 10, type=commands.BucketType.user)
 	async def coordinates(self, ctx, 
 		lat: Option(float, name="latitude", description="The latitude.", required=True), 
@@ -349,7 +348,7 @@ class Astronomy(commands.Cog):
 			print(e)
 			await ctx.respond("**I can't work with these cords!**")
 
-	@slash_command(guild_ids=TEST_GUILDS)
+	@slash_command()
 	@commands.cooldown(1, 10, type=commands.BucketType.user)
 	async def iss(self, ctx):
 		""" Shows information related to ISS' location. """
