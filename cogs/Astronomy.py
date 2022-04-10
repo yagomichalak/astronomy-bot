@@ -19,8 +19,6 @@ import wikipedia
 import aiohttp
 from typing import List, Tuple, Any, Union, Optional
 
-TEST_GUILDS: List[int] = [int(os.getenv('SERVER_ID'))]
-
 class Astronomy(commands.Cog):
 	""" A category for astronomy related commands and features. """
 
@@ -52,7 +50,7 @@ class Astronomy(commands.Cog):
 		return lines
 
 
-	@slash_command(name="list_universe", guild_ids=TEST_GUILDS)
+	@slash_command(name="list_universe")
 	async def _list_universe(self, ctx) -> None:
 		""" Shows all topics available to see. """
 

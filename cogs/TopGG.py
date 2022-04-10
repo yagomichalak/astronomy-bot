@@ -8,7 +8,6 @@ from random import randint
 from typing import List
 
 on_vote_log_id: int = int(os.getenv('ON_VOTE_LOG_ID'))
-TEST_GUILDS: List[int] = [int(os.getenv('SERVER_ID'))]
 
 class TopGG(commands.Cog):
 	""" Handles interactions with the top.gg API. """
@@ -49,7 +48,7 @@ class TopGG(commands.Cog):
 		print('Test vote!')
 		self.client.get_user(int(data['user']))
 
-	@slash_command(name="vote", guild_ids=TEST_GUILDS)
+	@slash_command(name="vote")
 	async def _vote(self, ctx) -> None:
 		""" Shows the amount of vote status of the bot, and link to vote for it. """
 
