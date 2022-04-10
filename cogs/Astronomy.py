@@ -70,10 +70,12 @@ class Astronomy(commands.Cog):
 
 		await ctx.respond(embed=the_universe)
 
-	@commands.command(aliases=['wi', 'whatis', 'whats'])
-	async def whatIs(self, ctx, topic: str = None) -> None:
+	@slash_command()
+	async def what_is(self, ctx, topic: str = None) -> None:
 		""" Shows some information about the given topic.
 		:param topic: The topic to show. """
+
+		await ctx.defer()
 
 		if not topic:
 			return await ctx.send("**Please, inform a topic!**")
@@ -94,7 +96,7 @@ class Astronomy(commands.Cog):
 		embed.set_thumbnail(url=links[0])
 		embed.set_image(url=links[0])
 		embed.set_footer(text=f"Requested by: {ctx.author.name}", icon_url=ctx.author.display_avatar)
-		await ctx.send(embed=embed)
+		await ctx.respond(embed=embed)
 
 	async def the_database(self) -> Tuple[Any, Any]:
 		""" Gets the database connection. """
@@ -284,11 +286,10 @@ class Astronomy(commands.Cog):
 	#   #{user[0][1]} / {((user[0][2]+1)**5)}."
 	#   return await ctx.send(embed=embed)
 
-	@commands.command()
-	async def source(self, ctx, command: Optional[str] = None):
-		""" Displays my full source code or for a specific command.
-		To display the source code of a subcommand you have to separate it by
-		periods, e.g. tag.create for the create subcommand of the tag command. """
+	@slash_command()
+	async def source(self, ctx, 
+		command: Option(str, name="command", description="The command to show", required=False)) -> None:
+		""" Displays full source code of a specific command. """
 
 		source_url = 'https://github.com/yagomichalak/astronomy-bot'
 		if command is None:
@@ -340,17 +341,19 @@ class Astronomy(commands.Cog):
 			has_planet = [level, f"Asteroid {level}"]
 		return has_planet
 
-	@commands.command(aliases=['scoreboard', 'sb', 'rank', 'ranking'])
-	async def score(self, ctx):
+	@slash_command()
+	async def score(self, ctx) -> None:
 		""" Shows the global scoreboard, regarding the experience points. """
 
+		await ctx.defer()
 		users = await self.get_top_ten()
 		spec_user = await self.get_user(ctx.author.id)
+		current_time = await utils.get_time_now()
 		scoreboard = discord.Embed(
 			title='__**Astronomical Scoreboard**__',
 			description='Top ten people in the world with more XP.',
 			color=self.client.user.color,
-			timestamp=ctx.message.created_at
+			timestamp=current_time
 		)
 		scoreboard.set_thumbnail(url=ctx.guild.icon.url)
 		scoreboard.set_footer(text=f"You: {spec_user[2]} XP", icon_url=ctx.author.display_avatar)
@@ -358,7 +361,7 @@ class Astronomy(commands.Cog):
 		for i, user in enumerate(users):
 			member = self.client.get_user(user[0])
 			scoreboard.add_field(name=f"{i+1} - __{member}__", value=f"`{user[2]}` XP", inline=False)
-		await ctx.send(embed=scoreboard)
+		await ctx.respond(embed=scoreboard)
 
 	async def get_top_ten(self) -> List[List[int]]:
 		""" Gets the top ten people with XP in the Universe table. """
@@ -456,12 +459,12 @@ class Astronomy(commands.Cog):
 		db.close()
 		return True if exists else False
 
-	@commands.command()
+	@slash_command()
 	async def random(self, ctx):
 		""" Fetches a random topic from the system. """
 
 		topic = random.choice(list(image_links))
-		await self.whatIs(ctx, topic)
+		await self.what_is(ctx, topic)
 
 	@commands.command()
 	@commands.cooldown(1, 10, type=commands.BucketType.user)
@@ -654,17 +657,18 @@ class Astronomy(commands.Cog):
 		info2 = f"```{info2}```"
 		await ctx.send(info2)
 
-	@commands.command(aliases=['ra'])
+	@slash_command()
 	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def reddit(self, ctx) -> None:
 		""" Shows a random post from the astronomy subreddit. """
 
+		await ctx.defer()
 		post_submissions = self.reddit.subreddit('astronomy').hot()
 		post_to_pick = random.randint(1, 100)
 		for i in range(0, post_to_pick):
 			submissions = next(x for x in post_submissions if not x.stickied)
 
-		await ctx.send(submissions.url)
+		await ctx.respond(submissions.url)
 
 	@commands.command(aliases=['wk','w', 'wiki'])
 	@commands.cooldown(1, 10, type=commands.BucketType.user)
@@ -696,19 +700,17 @@ class Astronomy(commands.Cog):
 				embed.set_footer(text="Page {}".format(num))
 				await ctx.send(embed=embed)
 
-	@commands.command(aliases=['cord', 'cords', 'coordinate'])
+	@slash_command()
 	@commands.cooldown(1, 10, type=commands.BucketType.user)
-	async def coordinates(self, ctx, lat: float = None, lon: float = None):
-		""" Shows some info of given coordinates.
-		:param lat: The latitude.
-		:param long: The longitude. """
+	async def coordinates(self, ctx, 
+		lat: Option(float, name="latitude", description="The latitude.", required=True), 
+		lon: Option(float, name="longitude.", description="The longitude", required=True)
+		) -> None:
+		""" Shows some info about the given coordinates. """
 
+		await ctx.defer()
 		root = 'https://api.wheretheiss.at/v1/coordinates'
-		if not lat:
-			return await ctx.send("**Inform the latitude!**")
-
-		if not lon:
-			return await ctx.send("**Inform the longitude!**")
+		current_time = await utils.get_time_now()
 
 		try:
 			async with self.session.get(f"{root}/{lat},{lon}") as response:
@@ -718,19 +720,20 @@ class Astronomy(commands.Cog):
 					title=f"{lat}, {lon}",
 					description=f"**__Timezone ID__:** {response['timezone_id']}\n**__Offset__:** {response['offset']}\n**__Country Code__:** {response['country_code']}\n",
 					color=ctx.author.color,
-					timetstamp=ctx.message.created_at,
+					timetstamp=current_time,
 					url=response['map_url']
 				)
-			await ctx.send(embed=embed)
+			await ctx.respond(embed=embed)
 		except Exception:
-			await ctx.send("**I can't work with these cords!**")
+			await ctx.respond("**I can't work with these cords!**")
 
 
-	@commands.command()
+	@slash_command()
 	@commands.cooldown(1, 10, type=commands.BucketType.user)
 	async def iss(self, ctx):
 		""" Shows information related to ISS' location. """
 
+		await ctx.defer()
 		root = 'https://api.wheretheiss.at/v1/satellites/25544'
 		root2 = 'https://api.wheretheiss.at/v1/coordinates'
 		async with self.session.get(root) as response:
@@ -770,7 +773,7 @@ class Astronomy(commands.Cog):
 		embed.set_footer(
 			text=f"Units: {data['units']}"
 		)
-		await ctx.send(embed=embed)
+		await ctx.respond(embed=embed)
 
 	@commands.command(aliases=['ul', 'upcoming', 'launches'])
 	async def upcoming_launches(self, ctx):
