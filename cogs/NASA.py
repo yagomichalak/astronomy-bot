@@ -6,7 +6,9 @@ import os
 from datetime import datetime
 import aiohttp
 import io
-from typing import Optional
+from typing import Optional, List
+
+TEST_GUILDS: List[int] = [int(os.getenv('SERVER_ID'))]
 
 class NASA(commands.Cog):
 	""" A category based on NASA's API """

@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands, tasks
+from discord.utils import escape_mentions
 from discord import slash_command, Option, OptionChoice
 
 from images.all_topics import topics, image_links, galaxy
@@ -18,6 +19,8 @@ import random
 import wikipedia
 import aiohttp
 from typing import List, Tuple, Any, Union, Optional
+
+TEST_GUILDS: List[int] = [int(os.getenv('SERVER_ID'))]
 
 class Astronomy(commands.Cog):
 	""" A category for astronomy related commands and features. """
@@ -70,7 +73,7 @@ class Astronomy(commands.Cog):
 
 		await ctx.respond(embed=the_universe)
 
-	@slash_command()
+	@slash_command(guild_ids=TEST_GUILDS)
 	async def what_is(self, ctx, topic: str = None) -> None:
 		""" Shows some information about the given topic.
 		:param topic: The topic to show. """
@@ -286,41 +289,6 @@ class Astronomy(commands.Cog):
 	#   #{user[0][1]} / {((user[0][2]+1)**5)}."
 	#   return await ctx.send(embed=embed)
 
-	@slash_command()
-	async def source(self, ctx, 
-		command: Option(str, name="command", description="The command to show", required=False)) -> None:
-		""" Displays full source code of a specific command. """
-
-		source_url = 'https://github.com/yagomichalak/astronomy-bot'
-		if command is None:
-			return await ctx.send(source_url)
-
-		code_path = command.split('.')
-		obj = self.client
-		for cmd in code_path:
-			try:
-				obj = obj.get_command(cmd)
-				if obj is None:
-					return await ctx.send(await _(ctx, 'Could not find the command ') + cmd)
-			except AttributeError:
-				await ctx.send((await _(ctx, '{0.name} command has no subcommands')).format(obj))
-				return
-
-		# since we found the command we're looking for, presumably anyway, let's
-		# try to access the code itself
-		src = obj.callback.__code__
-
-		if not obj.callback.__module__.startswith('discord'):
-			# not a built-in command
-			location = os.path.relpath(src.co_filename).replace('\\', '/')
-			final_url = '<{}/tree/master/{}#L{}>'.format(source_url, location, src.co_firstlineno)
-		else:
-			location = obj.callback.__module__.replace('.', '/') + '.py'
-			base = 'https://github.com/Pycord-Development/pycord'
-			final_url = '<{}/blob/master/{}#L{}>'.format(base, location, src.co_firstlineno)
-
-		await ctx.send(final_url)
-
 	async def get_astro(self, level, galaxy) -> str:
 		""" Gets information from an astro.
 		:param level: The user level.
@@ -341,7 +309,7 @@ class Astronomy(commands.Cog):
 			has_planet = [level, f"Asteroid {level}"]
 		return has_planet
 
-	@slash_command()
+	@slash_command(guild_ids=TEST_GUILDS)
 	async def score(self, ctx) -> None:
 		""" Shows the global scoreboard, regarding the experience points. """
 
@@ -459,7 +427,7 @@ class Astronomy(commands.Cog):
 		db.close()
 		return True if exists else False
 
-	@slash_command()
+	@slash_command(guild_ids=TEST_GUILDS)
 	async def random(self, ctx):
 		""" Fetches a random topic from the system. """
 
@@ -700,7 +668,7 @@ class Astronomy(commands.Cog):
 				embed.set_footer(text="Page {}".format(num))
 				await ctx.send(embed=embed)
 
-	@slash_command()
+	@slash_command(guild_ids=TEST_GUILDS)
 	@commands.cooldown(1, 10, type=commands.BucketType.user)
 	async def coordinates(self, ctx, 
 		lat: Option(float, name="latitude", description="The latitude.", required=True), 
@@ -720,15 +688,16 @@ class Astronomy(commands.Cog):
 					title=f"{lat}, {lon}",
 					description=f"**__Timezone ID__:** {response['timezone_id']}\n**__Offset__:** {response['offset']}\n**__Country Code__:** {response['country_code']}\n",
 					color=ctx.author.color,
-					timetstamp=current_time,
+					timestamp=current_time,
 					url=response['map_url']
 				)
 			await ctx.respond(embed=embed)
-		except Exception:
+		except Exception as e:
+			print(e)
 			await ctx.respond("**I can't work with these cords!**")
 
 
-	@slash_command()
+	@slash_command(guild_ids=TEST_GUILDS)
 	@commands.cooldown(1, 10, type=commands.BucketType.user)
 	async def iss(self, ctx):
 		""" Shows information related to ISS' location. """
@@ -739,7 +708,7 @@ class Astronomy(commands.Cog):
 		async with self.session.get(root) as response:
 			if not response.status == 200:
 				return await ctx.send("**For some reason I couldn't do it! Try again later**")
-		data = json.loads(await response.read())
+			data = json.loads(await response.read())
 
 		async with self.session.get(f"{root2}/{data['latitude']},{data['longitude']}") as response:
 			if response.status == 200:
