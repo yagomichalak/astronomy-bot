@@ -704,7 +704,7 @@ class Astronomy(commands.Cog):
 	@commands.cooldown(1, 10, type=commands.BucketType.user)
 	async def coordinates(self, ctx, 
 		lat: Option(float, name="latitude", description="The latitude.", required=True), 
-		lon: Option(float, name="longitude.", description="The longitude", required=True)
+		lon: Option(float, name="longitude", description="The longitude", required=True)
 		) -> None:
 		""" Shows some info about the given coordinates. """
 
