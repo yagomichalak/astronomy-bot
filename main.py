@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 load_dotenv()
 from typing import Optional
 
-client = commands.Bot(command_prefix='o!', intents=discord.Intents.default(), help_command=None)
+client = commands.Bot(command_prefix='o!', intents=discord.Intents.all(), help_command=None)
 on_guild_log_id: int = int(os.getenv('ON_GUILD_LOG_ID'))
 status = cycle(['member', 'server'])
 
@@ -76,7 +76,7 @@ async def on_guild_join(guild) -> None:
 	#Logs it in the bot's support server on_guild log
 	guild_log = client.get_channel(on_guild_log_id)
 	if guild_log:
-		embed.set_thumbnail(url=guild.icon_url)
+		embed.set_thumbnail(url=guildicon.url)
 		await guild_log.send(embed=embed)
 
 @client.event
@@ -88,7 +88,7 @@ async def on_guild_remove(guild) -> None:
 		description=f"We lost contact with the **Earth {len(client.guilds)+1}**, AKA **{guild.name}**!",
 		color=discord.Color.red()
 	)
-	embed.set_thumbnail(url=guild.icon_url)
+	embed.set_thumbnail(url=guildicon.url)
 	#Logs it in the bot's support server on_guild log
 	guild_log = client.get_channel(on_guild_log_id)
 	if guild_log:
@@ -157,7 +157,7 @@ async def info(ctx):
 	embed.set_footer(text=ctx.guild.name,
 				icon_url='https://cdn.discordapp.com/attachments/719020754858934294/720294157406568458/universe_hub_server_icon.png')
 	embed.set_thumbnail(
-	url=client.user.avatar_url)
+	url=client.user.display_avatar)
 	embed.set_author(name='DNK#6725', url='https://discord.gg/7DyWxSt',
 				icon_url='https://cdn.discordapp.com/attachments/719020754858934294/720289112040669284/DNK_icon.png')
 	await ctx.send(embed=embed)

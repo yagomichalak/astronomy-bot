@@ -60,8 +60,8 @@ class Astronomy(commands.Cog):
 		the_universe.add_field(name="__**Available topics:**__", value=f"```{', '.join(sorted(topics))}```", inline=True)
 		the_universe.set_image(url='https://cdn.discordapp.com/attachments/719020754858934294/719022762743824445/space2.png')
 		the_universe.set_thumbnail(url='https://cdn.discordapp.com/attachments/719020754858934294/719022762743824445/space2.png')
-		the_universe.set_author(name="The Big Bang", url=ctx.author.avatar_url)
-		the_universe.set_footer(text=ctx.guild.name, icon_url=ctx.guild.icon_url)
+		the_universe.set_author(name="The Big Bang", url=ctx.author.display_avatar)
+		the_universe.set_footer(text=ctx.guild.name, icon_url=ctx.guildicon.url)
 
 		return await ctx.send(embed=the_universe)
 
@@ -84,11 +84,11 @@ class Astronomy(commands.Cog):
 			timestamp=ctx.message.created_at,
 			url=links[1]
 		)
-		embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
+		embed.set_author(name=ctx.guild.name, icon_url=ctx.guildicon.url)
 		embed.add_field(name="__**Definition:**__", value=f"```{' '.join(result)}```", inline=False)
 		embed.set_thumbnail(url=links[0])
 		embed.set_image(url=links[0])
-		embed.set_footer(text=f"Requested by: {ctx.author.name}", icon_url=ctx.author.avatar_url)
+		embed.set_footer(text=f"Requested by: {ctx.author.name}", icon_url=ctx.author.display_avatar)
 		await ctx.send(embed=embed)
 
 	async def the_database(self) -> Tuple[Any, Any]:
@@ -274,7 +274,7 @@ class Astronomy(commands.Cog):
 	#   embed.add_field(name="__**Rank**__", value=f"{astro[0]}.", inline=False)
 	#   embed.add_field(name="__**EXP**__", value=f"{the_user[0][2]} / {((the_user[0][1]+1)**5)}.", inline=False)
 	#   embed.set_thumbnail(url=astro[1][0])
-	#   embed.set_footer(text=f"{member}", icon_url=member.avatar_url)
+	#   embed.set_footer(text=f"{member}", icon_url=member.display_avatar)
 	#   #embed.set_image(url='https://cdn.discordapp.com/attachments/719020754858934294/722519380914602145/mercury.png')
 	#   #{user[0][1]} / {((user[0][2]+1)**5)}."
 	#   return await ctx.send(embed=embed)
@@ -347,8 +347,8 @@ class Astronomy(commands.Cog):
 			color=self.client.user.color,
 			timestamp=ctx.message.created_at
 		)
-		scoreboard.set_thumbnail(url=ctx.guild.icon_url)
-		scoreboard.set_footer(text=f"You: {spec_user[2]} XP", icon_url=ctx.author.avatar_url)
+		scoreboard.set_thumbnail(url=ctx.guildicon.url)
+		scoreboard.set_footer(text=f"You: {spec_user[2]} XP", icon_url=ctx.author.display_avatar)
 
 		for i, user in enumerate(users):
 			member = self.client.get_user(user[0])
@@ -476,7 +476,7 @@ class Astronomy(commands.Cog):
 				timestamp=ctx.message.created_at,
 				color=ctx.author.color
 				)
-				embed.set_footer(text=f"Requested by: {ctx.author}", icon_url=ctx.author.avatar_url)
+				embed.set_footer(text=f"Requested by: {ctx.author}", icon_url=ctx.author.display_avatar)
 				await ctx.send(embed=embed)
 
 		else:
@@ -556,7 +556,7 @@ class Astronomy(commands.Cog):
 				color=ctx.author.color,
 				url=m[2]
 			)
-			embed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar_url)
+			embed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.display_avatar)
 			await ctx.send(embed=embed)
 
 		else:
@@ -1035,7 +1035,7 @@ class Astronomy(commands.Cog):
 			""", color=ctx.author.color, timestamp=ctx.message.created_at)
 
 			embed.set_image(url=data['map_image'])
-			embed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar_url)
+			embed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.display_avatar)
 
 			await the_msg.edit(embed=embed)
 			try:

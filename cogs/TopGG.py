@@ -36,7 +36,7 @@ class TopGG(commands.Cog):
 			color=discord.Color.green()
 		)
 		if member:
-			embed.set_thumbnail(url=member.avatar_url)
+			embed.set_thumbnail(url=member.display_avatar)
 		await vote_channel.send(embed=embed)
 
 	@commands.Cog.listener()
@@ -56,7 +56,7 @@ class TopGG(commands.Cog):
 		embed = discord.Embed(title="__Vote on me!__",
 			description=f"You can vote every 12 hours by clicking [here]({vote})."
 		)
-		embed.set_thumbnail(url=self.client.user.avatar_url)
+		embed.set_thumbnail(url=self.client.user.display_avatar)
 		embed.set_image(url=widget)
 		await ctx.send(embed=embed)
 

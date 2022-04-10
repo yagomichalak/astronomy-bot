@@ -166,7 +166,7 @@ class NASA(commands.Cog):
 			value=f'''```apache\nDistance (pc): {data['st_dist']}\nOptical Magnitude:** {data['st_optmag']}\nOptical Magnitude Band: {data['st_optband']}\nEffective Temperature (K): {data['st_teff']}\nStellar Mass (solar mass): {data['st_mass']}\nG-band (Gaia) (mag): {data['gaia_gmag']}```''', inline=False
 		)
 
-		embed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar_url)
+		embed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.display_avatar)
 		await ctx.send(embed=embed)
 
 def setup(client: commands.Bot) -> None:

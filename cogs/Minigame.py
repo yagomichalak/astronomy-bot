@@ -114,7 +114,7 @@ Would you like to go **left** or **right**?''')
       color=ctx.author.color,
       timestamp=ctx.message.created_at
       )
-    space_embed.set_thumbnail(url=ctx.author.avatar_url)
+    space_embed.set_thumbnail(url=ctx.author.display_avatar)
     await msg.edit(embed=space_embed)
 
   async def end_reactions(self, msg):
