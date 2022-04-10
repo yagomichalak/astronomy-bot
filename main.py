@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 load_dotenv()
 from typing import Optional
 
-client = commands.Bot(command_prefix='o!', intents=discord.Intents.all(), help_command=None)
+client = commands.Bot(command_prefix='o!', intents=discord.Intents.default(), help_command=None)
 on_guild_log_id: int = int(os.getenv('ON_GUILD_LOG_ID'))
 status = cycle(['member', 'server'])
 
