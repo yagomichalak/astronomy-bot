@@ -125,7 +125,6 @@ class NASA(commands.Cog):
 			print(error)
 		else:
 			all_data = json.loads(response.text)
-			print(all_data)
 			days = list(all_data.keys())[:-2]
 			embed = discord.Embed(
 				title="Mars Weather (F°)",
@@ -139,31 +138,35 @@ class NASA(commands.Cog):
 			else:
 				await ctx.respond(content="**It looks like we don't have the last 7 days Mars Weather... Sorry!**")
 
-	@commands.command(aliases=['ep', 'exo', 'xplanet'])
+	@slash_command(guild_ids=TEST_GUILDS)
 	@commands.cooldown(1, 10, type=commands.BucketType.user)
-	async def exoplanet(self, ctx, index: Optional[int] = None) -> None:
-		""" Gets some information about an exoplanet, when given an index in the scope of the amount of exoplanets available in the database.
-		:param index: The index of the exoplanet. """
+	async def exoplanet(self, ctx, 
+		index: Option(int, name="index", description="The index of the exoplanet.", required=False)
+	) -> None:
+		""" Gets some info about an exoplanet. """
 
-		root = 'https://exoplanetarchive.ipac.caltech.edu/cgi-bin/nstedAPI/nph-nstedAPI?table=exoplanets&format=json'
-		async with ctx.typing():
-			async with self.session.get(root) as response:
-				json_data = await response.read()
-				data = json.loads(json_data[537:])
-				lenex = len(data)		
+		await ctx.defer()
+
+		root = 'https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+*+from+ps&format=json'
+		async with self.session.get(root) as response:
+			json_data = await response.read()
+			print('aah ', json_data)
+			data = json.loads(json_data[537:])
+			lenex = len(data)		
 
 		if index is None:
-			return await ctx.send(f"**{ctx.author.mention}, {lenex-1} exoplanets were found in our database, please, provide a number between 0 and {lenex-1}!\nEx: o!exoplanet `74`.**")
+			return await ctx.respond(f"**{ctx.author.mention}, {lenex-1} exoplanets were found in our database, please, provide a number between 0 and {lenex-1}!\nEx: o!exoplanet `74`.**")
 
 		if index < 0 or index > lenex -1:
-			return await ctx.send(f"**{ctx.author.mention}, please, inform a number between 0 and {lenex-1}.**")
+			return await ctx.respond(f"**{ctx.author.mention}, please, inform a number between 0 and {lenex-1}.**")
 
+		current_time = await utils.get_time_now()
 		data = data[index]
 		embed = discord.Embed(
 			title=f"Exoplanet -> {data['pl_hostname']}",
 			description=f"Showing the exoplanet of index {index} out of {lenex}.",
 			color=ctx.author.color,
-			timestamp=ctx.message.created_at
+			timestamp=current_time
 		)
 
 		embed.add_field(
@@ -177,7 +180,7 @@ class NASA(commands.Cog):
 		)
 
 		embed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.display_avatar)
-		await ctx.send(embed=embed)
+		await ctx.respond(embed=embed)
 
 def setup(client: commands.Bot) -> None:
 	""" Cog's setup function. """
