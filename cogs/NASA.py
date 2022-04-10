@@ -1,5 +1,7 @@
 import discord
+from discord import slash_command, Option
 from discord.ext import commands
+
 import requests
 import json
 import os
@@ -7,6 +9,7 @@ from datetime import datetime
 import aiohttp
 import io
 from typing import Optional, List
+from extra import utils
 
 TEST_GUILDS: List[int] = [int(os.getenv('SERVER_ID'))]
 
@@ -26,14 +29,16 @@ class NASA(commands.Cog):
 
 		print('NASA cog is online!')
   
-	@commands.command()
+	@slash_command(guild_ids=TEST_GUILDS)
 	async def apod(self, ctx) -> None:
 		""" Gets the Astronomy Picture of the Day (APOD). """
+
+		await ctx.defer()
 
 		try:
 			response = requests.get(f"https://api.nasa.gov/planetary/apod?api_key={self.token}")
 		except requests.HTTPError:
-			return await ctx.send("**I couldn't do that for some reason, try again later!**")
+			return await ctx.respond("**I couldn't do that for some reason, try again later!**")
 		else:
 			data = json.loads(response.text)
 		try:
@@ -47,70 +52,72 @@ class NASA(commands.Cog):
 			pass
 
 		try:
-			await ctx.send(embed=embed)
+			await ctx.respond(embed=embed)
 		except Exception:
-			return await ctx.send("**It seems we don't have a picture for today yet!**")
+			return await ctx.respond("**It seems we don't have a picture for today yet!**")
 
-	@commands.command(aliases=['s', 'google'])
-	async def search(self, ctx, *, topic: str = None) -> None:
-		""" Searches something on NASA's website.
-		:param topic: The topic to search. """
+	@slash_command(guild_ids=TEST_GUILDS)
+	async def search(self, ctx, 
+		topic: Option(str, name="topic", description="The topic to search.", required=True)
+	) -> None:
+		""" Searches something on NASA's website. """
 
-		if not topic:
-			return await ctx.send("**Please, inform a topic to search!**")
+		await ctx.defer()
+
 		topic = topic.replace(' ', '%20')
 
 		try:
 			response = requests.get(f"https://images-api.nasa.gov/search?q={topic}")
 		except requests.HTTPError as exception:
-			return await ctx.send("I couldn't do that for some reason, try again later!")
+			return await ctx.respond("I couldn't do that for some reason, try again later!")
 		else:
 			data = json.loads(response.text)
 			list_data = data['collection']['items']
 			if not list_data:
-				return await ctx.send("**No results for this topic were found!**")
+				return await ctx.respond("**No results for this topic were found!**")
 			try:
 				data = list_data[0]
 				ddata = data['data'][0]
 				embed = discord.Embed(title=ddata['title'], description=ddata['description'], color=ctx.author.color, timestamp=datetime.strptime(ddata['date_created'], '%Y-%m-%dT%H:%M:%SZ'))
 				embed.set_image(url=data['links'][0]['href'].replace(' ', '%20'))
 			except Exception:
-				await ctx.send("**For some reason I can't use this one!**")
+				await ctx.respond("**For some reason I can't use this one!**")
 			else:
-				await ctx.send(embed=embed)
+				await ctx.respond(embed=embed)
 
-	@commands.command()
+	@slash_command(guild_ids=TEST_GUILDS)
 	@commands.cooldown(1, 20, type=commands.BucketType.user)
-	async def earth(self, ctx, lat: float = None, lon: float = None, dim: float = 0.025, date = datetime.utcnow().strftime('%Y-%m-%d')) -> None:
-		""" Shows a view of the earth from a given latitude and longitude.
-		:param lat: Latitude.
-		:param lon: Longitude.
-		:param dim: Width and hight in degrees (Default=0.025).
-		:param date: The date (YYYY-MM-DD)(Default=today). """
+	@utils.not_ready()
+	async def earth(self, ctx, 
+		lat: Option(float, name="latitude", description="The latitude of the coordinates.", required=True), 
+		lon: Option(float, name="longitude", description="The longitude of the coordinates.", required=True), 
+		dim: Option(float, name="dimension", description="The dimension of the coordinates.", default=0.025),
+		date: Option(str, name="date", description="The data the picture was taken. (YYYY-MM-DD)", default=datetime.utcnow().strftime('%Y-%m-%d'))
+	) -> None:
+		""" Shows a view of the earth from a given latitude and longitude. """
 
-		if not lat:
-			return await ctx.send("**You must inform the latitude!**")
-		if not lon:
-			return await ctx.send("**You must inform the longitude!**")
+		await ctx.defer()
+
 		root = 'https://api.nasa.gov/planetary/earth/imagery'
 		try:
 			link = f"{root}?lon={lon}&lat={lat}&date={date}&dim={dim}&api_key={self.token}"
-			async with ctx.typing():
-				async with self.session.get(link) as response:
-					image = await response.read()
+			async with self.session.get(link) as response:
+				image = await response.read()
 
 		except Exception as error:
 			print(error)
-			return await ctx.send("I couldn't do that for some reason, try again later!")
+			return await ctx.respond("I couldn't do that for some reason, try again later!")
 		else:
-			await ctx.send("**Here's your view!!**", file=discord.File(io.BytesIO(image), 'earth.png'))
+			await ctx.respond("**Here's your view!!**", file=discord.File(io.BytesIO(image), 'earth.png'))
 
-	@commands.command()
+	@slash_command(name="mars_weather", guild_ids=TEST_GUILDS)
 	@commands.cooldown(1, 10, type=commands.BucketType.user)
-	async def mw(self, ctx) -> None:
+	@utils.not_ready()
+	async def _mars_weather(self, ctx) -> None:
 		""" Gets Mars' weather from the last 7 days. """
 
-		root = "https://api.nasa.gov/insight_weather/?api_key=DEMO_KEY&feedtype=json&ver=1.0"
+		await ctx.defer()
+		root = f"https://api.nasa.gov/insight_weather/?api_key={self.token}&feedtype=json&ver=1.0"
 
 		try:
 			response = requests.get(root)
@@ -118,6 +125,7 @@ class NASA(commands.Cog):
 			print(error)
 		else:
 			all_data = json.loads(response.text)
+			print(all_data)
 			days = list(all_data.keys())[:-2]
 			embed = discord.Embed(
 				title="Mars Weather (F°)",
@@ -127,9 +135,9 @@ class NASA(commands.Cog):
 				sol = day
 				day = all_data[day]
 				embed.add_field(name=f":sunny: Sol ({sol})", value=f"```ini\n[Max]: {day['AT']['mx']}\n[Min]: {day['AT']['mn']}\n[First UTC]: {day['First_UTC']}\n[Last UTC]: {day['Last_UTC']}```", inline=True)
-				return await ctx.send(embed=embed)
+				return await ctx.respond(embed=embed)
 			else:
-				await ctx.send(content="**It looks like we don't have the last 7 days Mars Weather... Sorry!**")
+				await ctx.respond(content="**It looks like we don't have the last 7 days Mars Weather... Sorry!**")
 
 	@commands.command(aliases=['ep', 'exo', 'xplanet'])
 	@commands.cooldown(1, 10, type=commands.BucketType.user)

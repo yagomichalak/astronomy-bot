@@ -1,6 +1,8 @@
+from discord.ext import commands
 from datetime import datetime
 import aiohttp
 
+from .custom_errors import CommandNotReady
 import re
 from pytz import timezone
 session = aiohttp.ClientSession()
@@ -27,3 +29,12 @@ async def parse_time(tz: str = 'Etc/GMT') -> str:
 
     tzone = timezone(tz)
     return datetime(*map(int, re.split(r'[^\d]', str(datetime.now(tzone)).replace('+00:00', ''))))
+
+def not_ready():
+    """ Makes a command not be usable. """
+
+    async def real_check(ctx):
+        """ Performs the real check. """
+        raise CommandNotReady()
+
+    return commands.check(real_check)
