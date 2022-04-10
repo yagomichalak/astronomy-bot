@@ -349,7 +349,6 @@ class Astronomy(commands.Cog):
 			print(e)
 			await ctx.respond("**I can't work with these cords!**")
 
-
 	@slash_command(guild_ids=TEST_GUILDS)
 	@commands.cooldown(1, 10, type=commands.BucketType.user)
 	async def iss(self, ctx):

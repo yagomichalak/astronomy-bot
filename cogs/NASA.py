@@ -29,7 +29,7 @@ class NASA(commands.Cog):
 
 		print('NASA cog is online!')
   
-	@slash_command(guild_ids=TEST_GUILDS)
+	@slash_command()
 	async def apod(self, ctx) -> None:
 		""" Gets the Astronomy Picture of the Day (APOD). """
 
@@ -56,7 +56,7 @@ class NASA(commands.Cog):
 		except Exception:
 			return await ctx.respond("**It seems we don't have a picture for today yet!**")
 
-	@slash_command(guild_ids=TEST_GUILDS)
+	@slash_command()
 	async def search(self, ctx, 
 		topic: Option(str, name="topic", description="The topic to search.", required=True)
 	) -> None:
@@ -68,7 +68,7 @@ class NASA(commands.Cog):
 
 		try:
 			response = requests.get(f"https://images-api.nasa.gov/search?q={topic}")
-		except requests.HTTPError as exception:
+		except requests.HTTPError:
 			return await ctx.respond("I couldn't do that for some reason, try again later!")
 		else:
 			data = json.loads(response.text)
@@ -140,6 +140,7 @@ class NASA(commands.Cog):
 
 	@slash_command(guild_ids=TEST_GUILDS)
 	@commands.cooldown(1, 10, type=commands.BucketType.user)
+	@utils.not_ready()
 	async def exoplanet(self, ctx, 
 		index: Option(int, name="index", description="The index of the exoplanet.", required=False)
 	) -> None:
@@ -150,7 +151,6 @@ class NASA(commands.Cog):
 		root = 'https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+*+from+ps&format=json'
 		async with self.session.get(root) as response:
 			json_data = await response.read()
-			print('aah ', json_data)
 			data = json.loads(json_data[537:])
 			lenex = len(data)		
 
