@@ -76,7 +76,7 @@ async def on_guild_join(guild) -> None:
 	#Logs it in the bot's support server on_guild log
 	guild_log = client.get_channel(on_guild_log_id)
 	if guild_log:
-		embed.set_thumbnail(url=guildicon.url)
+		embed.set_thumbnail(url=guild.icon.url)
 		await guild_log.send(embed=embed)
 
 @client.event
@@ -88,7 +88,7 @@ async def on_guild_remove(guild) -> None:
 		description=f"We lost contact with the **Earth {len(client.guilds)+1}**, AKA **{guild.name}**!",
 		color=discord.Color.red()
 	)
-	embed.set_thumbnail(url=guildicon.url)
+	embed.set_thumbnail(url=guild.icon.url)
 	#Logs it in the bot's support server on_guild log
 	guild_log = client.get_channel(on_guild_log_id)
 	if guild_log:

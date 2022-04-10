@@ -1,11 +1,14 @@
 import dbl
 import discord
 from discord.ext import commands
+from discord import slash_command
 
 import os
 from random import randint
+from typing import List
 
 on_vote_log_id: int = int(os.getenv('ON_VOTE_LOG_ID'))
+TEST_GUILDS: List[int] = [int(os.getenv('SERVER_ID'))]
 
 class TopGG(commands.Cog):
 	""" Handles interactions with the top.gg API. """
@@ -46,19 +49,21 @@ class TopGG(commands.Cog):
 		print('Test vote!')
 		self.client.get_user(int(data['user']))
 
-	@commands.command()
-	async def vote(self, ctx) -> None:
-		""" Shows the amount of votes that the bot has, the amount of servers the bot is in and gives you a link to vote for the bot. """
+	@slash_command(name="vote", guild_ids=TEST_GUILDS)
+	async def _vote(self, ctx) -> None:
+		""" Shows the amount of vote status of the bot, and link to vote for it. """
 
+		await ctx.defer(ephemeral=True)
 		#widget = await self.dblpy.generate_widget_large()
 		widget = f'https://top.gg/api/widget/723699955008798752.png?{randint(0, 2147483647)}topcolor=2C2F33&middlecolor=23272A&usernamecolor=FFFFF0&certifiedcolor=FFFFFF&datacolor=F0F0F0&labelcolor=99AAB5&highlightcolor=2C2F33'
 		vote = 'https://top.gg/bot/723699955008798752/vote'
-		embed = discord.Embed(title="__Vote on me!__",
+		embed = discord.Embed(
+			title="__Vote on me!__",
 			description=f"You can vote every 12 hours by clicking [here]({vote})."
 		)
 		embed.set_thumbnail(url=self.client.user.display_avatar)
 		embed.set_image(url=widget)
-		await ctx.send(embed=embed)
+		await ctx.respond(embed=embed, ephemeral=True)
 
 
 def setup(client: commands.Bot) -> None:

@@ -1,9 +1,12 @@
 import discord
 from discord.ext import commands, tasks
+from discord import slash_command, Option, OptionChoice
 
 from images.all_topics import topics, image_links, galaxy
 from images.agencies import space_agencies
 from images.movies import movies
+
+from extra import utils
 
 from datetime import datetime
 import os
@@ -16,6 +19,8 @@ import wikipedia
 import aiohttp
 from typing import List, Tuple, Any, Union, Optional
 
+TEST_GUILDS: List[int] = [int(os.getenv('SERVER_ID'))]
+
 class Astronomy(commands.Cog):
 	""" A category for astronomy related commands and features. """
 
@@ -24,11 +29,11 @@ class Astronomy(commands.Cog):
 
 		self.client = client
 		self.reddit = praw.Reddit(
-		client_id=os.getenv('REDDIT_CLIENT_ID'), # Client id
-		client_secret=os.getenv('REDDIT_CLIENT_SECRET'), # My client secret
-		user_agent=os.getenv('REDDIT_USER_AGENT'), # My user agent. It can be anything
-		username='', # Not needed
-		password='') # Not needed
+			client_id=os.getenv('REDDIT_CLIENT_ID'), # Client id
+			client_secret=os.getenv('REDDIT_CLIENT_SECRET'), # My client secret
+			user_agent=os.getenv('REDDIT_USER_AGENT'), # My user agent. It can be anything
+			username='', # Not needed
+			password='') # Not needed
 		self.session = aiohttp.ClientSession(loop=client.loop)
 
 
@@ -47,23 +52,25 @@ class Astronomy(commands.Cog):
 		return lines
 
 
-	@commands.command(aliases=['lu', 'listuniverse', 'topics'])
-	async def listUniverse(self, ctx) -> object:
+	@slash_command(name="list_universe", guild_ids=TEST_GUILDS)
+	async def _list_universe(self, ctx) -> None:
 		""" Shows all topics available to see. """
 
+		await ctx.defer()
+		current_time = await utils.get_time_now()
 		the_universe = discord.Embed(
 			title="__**The Universe**__",
 			description="The universe is big, and it is worth exploring and knowing more about it.",
 			color=discord.Color.dark_purple(),
-			timestamp=ctx.message.created_at
+			timestamp=current_time
 		)
 		the_universe.add_field(name="__**Available topics:**__", value=f"```{', '.join(sorted(topics))}```", inline=True)
 		the_universe.set_image(url='https://cdn.discordapp.com/attachments/719020754858934294/719022762743824445/space2.png')
 		the_universe.set_thumbnail(url='https://cdn.discordapp.com/attachments/719020754858934294/719022762743824445/space2.png')
 		the_universe.set_author(name="The Big Bang", url=ctx.author.display_avatar)
-		the_universe.set_footer(text=ctx.guild.name, icon_url=ctx.guildicon.url)
+		the_universe.set_footer(text=ctx.guild.name, icon_url=ctx.guild.icon.url)
 
-		return await ctx.send(embed=the_universe)
+		await ctx.respond(embed=the_universe)
 
 	@commands.command(aliases=['wi', 'whatis', 'whats'])
 	async def whatIs(self, ctx, topic: str = None) -> None:
@@ -84,7 +91,7 @@ class Astronomy(commands.Cog):
 			timestamp=ctx.message.created_at,
 			url=links[1]
 		)
-		embed.set_author(name=ctx.guild.name, icon_url=ctx.guildicon.url)
+		embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon.url)
 		embed.add_field(name="__**Definition:**__", value=f"```{' '.join(result)}```", inline=False)
 		embed.set_thumbnail(url=links[0])
 		embed.set_image(url=links[0])
@@ -347,7 +354,7 @@ class Astronomy(commands.Cog):
 			color=self.client.user.color,
 			timestamp=ctx.message.created_at
 		)
-		scoreboard.set_thumbnail(url=ctx.guildicon.url)
+		scoreboard.set_thumbnail(url=ctx.guild.icon.url)
 		scoreboard.set_footer(text=f"You: {spec_user[2]} XP", icon_url=ctx.author.display_avatar)
 
 		for i, user in enumerate(users):
