@@ -557,12 +557,15 @@ class Astronomy(commands.Cog):
 
 	async def make_astronaut_embed(self, req: str, member: Union[discord.Member, discord.User], search: str, example: Any,
 		offset: int, lentries: int, entries: Dict[str, Any], title: str = None, result: str = None) -> discord.Embed:
-		
+		""" Makes a paginated embed for the astronaut command. """
+
+		current_time = await utils.get_time_now()
 
 		embed = discord.Embed(
 			title=f"{example['name']} ({offset}/{lentries})",
 			description=f"```{example['bio']}```",
 			color=member.color,
+			timestamp=current_time,
 			url=example['wiki']
 		)
 
@@ -598,12 +601,14 @@ class Astronomy(commands.Cog):
 		embed.set_thumbnail(url=example['profile_image_thumbnail'])
 		return embed
 
-	@commands.command()
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def location(self, ctx, country_code: str = ''):
-		""" Shows launch and landing status about some locations.
-		:param country_code: The acronym of the country (e.g = USA)[Optional]. """
+	@slash_command(guild_ids=TEST_GUILDS)
+	async def location(self, ctx, 
+		country_code: Option(str, name="country_code", description="The country acronym (e.g = USA)", required=False, default='')
+	) -> None:
+		""" Shows launch and landing status about some locations. """
 
+		await ctx.defer()
 		root = 'https://ll.thespacedevs.com/2.0.0/location'
 
 		async with self.session.get(f"{root}/?country_code={country_code.upper()}") as response:
@@ -611,49 +616,40 @@ class Astronomy(commands.Cog):
 				response = json.loads(await response.read())['results']
 				lenlo = len(response)
 				if not lenlo:
-					return await ctx.send("**No results found for this country!**")
+					return await ctx.respond("**No results found for this country!**")
 			else:
-				return await ctx.send("**I can't work with this country code!**")
+				return await ctx.respond("**I can't work with this country code!**")
 
-		index = 0
-		the_msg = await ctx.send(embed=discord.Embed(title='🗺️'))
+		additional = {
+			'client': self.client,
+			'req': root,
+			'change_embed': self.make_location_embed
+		}
+		view = PaginatorView(response, **additional)
+		embed = await view.make_embed(ctx.author)
+		await ctx.respond(embed=embed, view=view)
 
-		def check(r, u) -> bool:
-			return u == ctx.author and str(r.message.id) == str(the_msg.id) and str(r.emoji) in ['⬅️', '➡️']
+	async def make_location_embed(self, req: str, member: Union[discord.Member, discord.User], search: str, example: Any,
+		offset: int, lentries: int, entries: Dict[str, Any], title: str = None, result: str = None) -> discord.Embed:
+		""" Makes a paginated embed for the location command. """
 
-		await asyncio.sleep(1)
-		await the_msg.add_reaction('⬅️')
-		await the_msg.add_reaction('➡️')
+		current_time = await utils.get_time_now()
 
-		while True:
-			data = response[index]
-			embed = discord.Embed(
-			title=f"{data['name']} ({index + 1}/{lenlo})",
-			description=f"""
-			**Coutry Code:** {data['country_code']}
-			**Total Launch Count:** {data['total_launch_count']}
-			**Total Landing Count:** {data['total_landing_count']}
-			""", color=ctx.author.color, timestamp=ctx.message.created_at)
+		embed = discord.Embed(
+		title=f"{example['name']} ({offset}/{lentries})",
+		description=f"""
+		**Coutry Code:** {example['country_code']}
+		**Total Launch Count:** {example['total_launch_count']}
+		**Total Landing Count:** {example['total_landing_count']}
+		""", color=member.color, timestamp=current_time)
 
-			embed.set_image(url=data['map_image'])
-			embed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.display_avatar)
+		embed.set_image(url=example['map_image'])
+		embed.set_footer(text=f"Requested by {member}", icon_url=member.display_avatar)
 
-			await the_msg.edit(embed=embed)
-			try:
-				reaction, member = await self.client.wait_for('reaction_add', timeout=60, check=check)
-			except asyncio.TimeoutError:
-				await the_msg.remove_reaction('➡️', self.client.user)
-				await the_msg.remove_reaction('⬅️', self.client.user)
-			else:
-				await the_msg.remove_reaction(reaction.emoji, member)
-				if str(reaction.emoji) == '➡️' :
-					if index < lenlo -1:
-						index += 1
-					continue
-				elif str(reaction.emoji) == '⬅️':
-					if index > 0:
-						index -= 1
-					continue
+		return embed
+
+
+
 
 def setup(client: commands.Bot) -> None:
 	""" Cog's setup function. """
