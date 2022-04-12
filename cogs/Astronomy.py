@@ -289,36 +289,6 @@ class Astronomy(commands.Cog):
 
 		await ctx.respond(submissions.url)
 
-	@commands.command(aliases=['wk','w', 'wiki'])
-	@commands.cooldown(1, 10, type=commands.BucketType.user)
-	async def wikipedia(self, ctx, *, topic: str = None) -> None:
-		""" Searches something on Wikipedia.
-		:param topic: The topic to search. """
-
-		if not topic:
-			return await ctx.send(f"**{ctx.author.mention}, please, inform a topic to search!**")
-		try:
-			result = wikipedia.summary(topic)
-		except Exception as error:
-			return await ctx.send("**I couldn't find anything for this topic!**")
-		if (len(result) <= 2048):
-			embed = discord.Embed(title=f"(Wikipedia) - __{topic.title()}__:", description=result, colour=discord.Colour.green())
-			return await ctx.send(embed=embed)
-
-		embedList = []
-		n = 2048
-		embedList = [result[i:i + n] for i in range(0, len(result), n)]
-
-		for num, item in enumerate(embedList, start=1):
-			if (num == 1):
-				embed = discord.Embed(title=f"(Wikipedia) - __{topic.title()}__:", description=item, colour=discord.Colour.green())
-				embed.set_footer(text="Page {}".format(num))
-				await ctx.send(embed=embed)
-			else:
-				embed = discord.Embed(description=item, colour=discord.Colour.green())
-				embed.set_footer(text="Page {}".format(num))
-				await ctx.send(embed=embed)
-
 	@slash_command()
 	@commands.cooldown(1, 10, type=commands.BucketType.user)
 	async def coordinates(self, ctx, 
