@@ -8,6 +8,7 @@ from images.agencies import space_agencies
 from images.movies import movies
 
 from extra import utils
+from extra.views import PaginatorView
 
 from datetime import datetime
 import os
@@ -18,7 +19,7 @@ import asyncio
 import random
 import wikipedia
 import aiohttp
-from typing import List, Tuple, Any, Union, Optional
+from typing import List, Dict, Any, Union
 
 TEST_GUILDS: List[int] = [int(os.getenv('SERVER_ID'))]
 
@@ -51,7 +52,6 @@ class Astronomy(commands.Cog):
 		with open(f"./texts/{topic}.txt", "r") as f:
 			lines = f.readlines()
 		return lines
-
 
 	@slash_command(name="list_universe")
 	async def _list_universe(self, ctx) -> None:
@@ -262,7 +262,6 @@ class Astronomy(commands.Cog):
 							if index > 0:
 								index -= 2
 							continue
-
 
 	@commands.command(hidden=True)
 	@commands.is_owner()
@@ -518,37 +517,24 @@ class Astronomy(commands.Cog):
 						index -= 1
 					continue
 
-	@commands.command(aliases=['an'])
+	@slash_command()
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def astronaut(self, ctx, status: str = None, nationality: str = '', *, name: str = ''):
-		""" Shows information about astronauts.
-		:param status: The status ID of the astronaut(s) [Optional].
-		:param nationality: The nationality of the astronaut(s) [Optional].
-		:param name: The name of the astronaut(s) [Optional]. """
+	async def astronaut(self, ctx, 
+		status: Option(str, name="status", description="The status of the astronaut(s).", required=True, choices=[
+			OptionChoice(name="Active", value="1"),
+			OptionChoice(name="Retired", value="2"),
+			OptionChoice(name="Lost In Flight", value="4"),
+			OptionChoice(name="Lost In Training", value="5"),
+			OptionChoice(name="Died While In Active Service", value="6"),
+			OptionChoice(name="Dismissed", value="7"),
+			OptionChoice(name="Resigned during Training", value="8")
+		], default=''), 
+		nationality: Option(str, name="nationality", description="The nationality of the astronaut(s).", required=False, default=''),
+		name: Option(str, name="name", description="The name of the astronaut(s).", required=False, default='')
+	) -> None:
+		""" Shows information about astronauts. """
 
-
-		statuses = {
-			"1": "Active",
-			"2": "Retired",
-			"4": "Lost In Flight",
-			"5": "Lost In Training",
-			"6": "Died While In Active Service",
-			"7": "Dismissed",
-			"8": "Resigned during Training"
-		}
-		if not status in statuses:
-			embed = discord.Embed(
-				title="__Status Table__",
-				color=ctx.author.color, 
-				timestamp=ctx.message.created_at)
-			msg = "**Available values:**\n```apache\n"
-			for k, v in statuses.items():
-				msg += f'''{k} = "{v}"\n'''
-			else:
-				msg += "```"
-				embed.description = f"{msg}"
-				return await ctx.send(embed=embed)
-
+		await ctx.defer()
 
 		root = f'https://ll.thespacedevs.com/2.0.0/astronaut/?status={status}&nationality={nationality.title()}&name={name.title()}'
 		async with self.session.get(root) as response:
@@ -556,74 +542,61 @@ class Astronomy(commands.Cog):
 				response = json.loads(await response.read())['results']
 				lenau = len(response)
 				if not lenau:
-					return await ctx.send("**No results found for these parameters!**")
+					return await ctx.respond("**No results found for these parameters!**")
 			else:
-				return await ctx.send("**I can't work with these parameters!**")
+				return await ctx.respond("**I can't work with these parameters!**")
 
-		index = 0
-		the_msg = await ctx.send(embed=discord.Embed(title="👨‍🚀"))
-		member = ctx.author
-		def check(r, u) -> bool:
-			return u == member and str(r.message.id) == str(the_msg.id) and str(r.emoji) in ['⬅️', '➡️']
+		additional = {
+			'client': self.client,
+			'req': root,
+			'change_embed': self.make_astronaut_embed
+		}
+		view = PaginatorView(response, **additional)
+		embed = await view.make_embed(ctx.author)
+		await ctx.respond(embed=embed, view=view)
 
-		await asyncio.sleep(1)
-		await the_msg.add_reaction('⬅️')
-		await the_msg.add_reaction('➡️')
-		while True:
-			data = response[index]
-			embed = discord.Embed(
-				title=f"{data['name']} ({index+1}/{lenau})",
-				description=f"```{data['bio']}```",
-				color=ctx.author.color,
-				url=data['wiki']
-			)
+	async def make_astronaut_embed(self, req: str, member: Union[discord.Member, discord.User], search: str, example: Any,
+		offset: int, lentries: int, entries: Dict[str, Any], title: str = None, result: str = None) -> discord.Embed:
+		
 
-			embed.add_field(
-				name="__`Status`__", 
-				value=f"""
-				**Status:** {data['status']['name']} | **Status ID:** {data['status']['id']}
-				**Birth Date:** {data['date_of_birth']}
-				**Death Date:** {data['date_of_death']}
-				**Nationality:** {data['nationality']}    
-				""",
-				inline=False)
+		embed = discord.Embed(
+			title=f"{example['name']} ({offset}/{lentries})",
+			description=f"```{example['bio']}```",
+			color=member.color,
+			url=example['wiki']
+		)
 
-			embed.add_field(
-				name=f"__`General`__",
-				value=f'''
-				**First Flight:** {data['first_flight']}
-				**Last Flight:** {data['last_flight']}
-				**Twitter?** {f"[Yes!]({data['twitter']})" if data['twitter'] else 'No!'} | **Instagram?** {f"[Yes!]({data['instagram']})" if data['instagram'] else 'No!'}
-				''', inline=False)
+		embed.add_field(
+			name="__`Status`__", 
+			value=f"""
+			**Status:** {example['status']['name']} | **Status ID:** {example['status']['id']}
+			**Birth Date:** {example['date_of_birth']}
+			**Death Date:** {example['date_of_death']}
+			**Nationality:** {example['nationality']}    
+			""",
+			inline=False)
 
-			embed.add_field(
-				name=f"__`Agency`__",
-				value=f"""
-				**ID:** {data['agency']['id']} \t|\t **Name:** {data['agency']['name']}
-				**Featured:** {data['agency']['type']} | **Country Code:** {data['agency']['country_code']}
-				**Abbreviation:** {data['agency']['abbrev']} | **Administrator:** {data['agency']['administrator']}
-				**Launchers:** {data['agency']['launchers']} | **Spacecraft:** {data['agency']['spacecraft']}
-				**Founding Year:** {data['agency']['founding_year']} | **Parent:** {data['agency']['parent']}
-				""",
-				inline=False
-			)
-			embed.set_thumbnail(url=data['profile_image_thumbnail'])
-			await the_msg.edit(embed=embed)
-			try:
-				reaction, user = await self.client.wait_for('reaction_add', timeout=60, check=check)
-			except asyncio.TimeoutError:
-				await the_msg.remove_reaction('➡️', self.client.user)
-				await the_msg.remove_reaction('⬅️', self.client.user)
-				break
-			else:
-				await the_msg.remove_reaction(reaction.emoji, user)
-				if str(reaction.emoji) == "➡️":
-					if index < lenau - 1:
-						index += 1
-					continue
-				elif str(reaction.emoji) == "⬅️":
-					if index > 0:
-						index -= 1
+		embed.add_field(
+			name=f"__`General`__",
+			value=f'''
+			**First Flight:** {example['first_flight']}
+			**Last Flight:** {example['last_flight']}
+			**Twitter?** {f"[Yes!]({example['twitter']})" if example['twitter'] else 'No!'} | **Instagram?** {f"[Yes!]({example['instagram']})" if example['instagram'] else 'No!'}
+			''', inline=False)
+
+		embed.add_field(
+			name=f"__`Agency`__",
+			value=f"""
+			**ID:** {example['agency']['id']} \t|\t **Name:** {example['agency']['name']}
+			**Featured:** {example['agency']['type']} | **Country Code:** {example['agency']['country_code']}
+			**Abbreviation:** {example['agency']['abbrev']} | **Administrator:** {example['agency']['administrator']}
+			**Launchers:** {example['agency']['launchers']} | **Spacecraft:** {example['agency']['spacecraft']}
+			**Founding Year:** {example['agency']['founding_year']} | **Parent:** {example['agency']['parent']}
+			""",
+			inline=False
+		)
+		embed.set_thumbnail(url=example['profile_image_thumbnail'])
+		return embed
 
 	@commands.command()
 	@commands.cooldown(1, 10, commands.BucketType.user)

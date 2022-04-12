@@ -10,6 +10,7 @@ import aiohttp
 import io
 from typing import Optional, List
 from extra import utils
+from extra.views import PaginatorView
 
 TEST_GUILDS: List[int] = [int(os.getenv('SERVER_ID'))]
 
