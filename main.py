@@ -15,7 +15,7 @@ from typing import Optional
 
 client = commands.Bot(command_prefix='o!', intents=discord.Intents.default(), help_command=None)
 on_guild_log_id: int = int(os.getenv('ON_GUILD_LOG_ID'))
-status = cycle(['member', 'server'])
+status = cycle(['slash', ])#'member', 'server',])
 
 @client.event
 async def on_ready() -> None:
@@ -130,18 +130,22 @@ async def on_message(message) -> None:
 		return
 
 	if match(f"<@!?{client.user.id}>", message.content) is not None:
-		await message.channel.send(f"**{message.author.mention}, my prefix is `{client.command_prefix}`**")
+		await message.channel.send(f"**{message.author.mention}, my prefix is `/`**")
 
 	await client.process_commands(message)
+
 
 @tasks.loop(seconds=30)
 async def in_servers() -> None:
 	""" Updates the server and member count. """
 	
 	ns = next(status)
-	if ns == 'member':
+	if ns == 'slash':
+		ns = f"slash commands. /"
+		return await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name=ns))
+	elif ns == 'member':
 		# ns = f"for {len([x for l in [g.members for g in client.guilds] for x in l])} users!"
-		ns = 'for the humanity!'
+		ns = 'for shumanity!'
 
 	elif ns == 'server':
 		ns = f"on {len(client.guilds)} servers!"

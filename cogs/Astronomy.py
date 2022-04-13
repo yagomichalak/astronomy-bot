@@ -107,7 +107,7 @@ class Astronomy(commands.Cog):
 		topic = random.choice(list(image_links))
 		await self.what_is(ctx, topic)
 
-	@slash_command(guild_ids=TEST_GUILDS)
+	@slash_command()
 	@commands.cooldown(1, 10, type=commands.BucketType.user)
 	async def agency(self, ctx, 
 		country: Option(str, name="country", description="The country of that agency.", required=False)
