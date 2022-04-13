@@ -107,87 +107,79 @@ class Astronomy(commands.Cog):
 		topic = random.choice(list(image_links))
 		await self.what_is(ctx, topic)
 
-	@commands.command()
+	@slash_command(guild_ids=TEST_GUILDS)
 	@commands.cooldown(1, 10, type=commands.BucketType.user)
-	async def agency(self, ctx, *, country: str = None):
-		""" Shows all space agencies in the world or a specific one.
-		:param country: The country of that agency. """
+	async def agency(self, ctx, 
+		country: Option(str, name="country", description="The country of that agency.", required=False)
+	) -> None:
+		""" Shows all space agencies in the world or a specific one. """
+
+		await ctx.defer()
+		current_time = await utils.get_time_now()
 
 		if country:
 			try:
 				ca = space_agencies[country.title()]
 			except KeyError:
-				await ctx.send(f"**{ctx.author.mention}, '`{country}`' is either not a country or doesn't have a space agency!**")
+				await ctx.respond(f"**{ctx.author.mention}, '`{country}`' is either not a country or doesn't have a space agency!**")
 			else:
 				website = f"[Yes!]({ca[5]})" if ca[5] else 'No!'
 				embed = discord.Embed(
-				title=f"{ca[0]} __{country.title()}'s Space Agency__", description=f"**Acronym**: [{ca[1]}]({ca[3]})\n**Meaning**: {ca[2]}\n**Website?** {website}",
-				timestamp=ctx.message.created_at,
-				color=ctx.author.color
+					title=f"{ca[0]} __{country.title()}'s Space Agency__", description=f"**Acronym**: [{ca[1]}]({ca[3]})\n**Meaning**: {ca[2]}\n**Website?** {website}",
+					timestamp=current_time,
+					color=ctx.author.color
 				)
 				embed.set_footer(text=f"Requested by: {ctx.author}", icon_url=ctx.author.display_avatar)
-				await ctx.send(embed=embed)
+				await ctx.respond(embed=embed)
 
 		else:
-			embed = discord.Embed(
-				title="__Space Agencies__",
-				description='All space agencies in the world.',
-				color=ctx.author.color,
-				timestamp=ctx.message.created_at,
-				url='https://en.wikipedia.org/wiki/List_of_government_space_agencies#List_of_space_agencies'
-			)
 
-			msg = await ctx.send(embed=embed)
-			await asyncio.sleep(0.5)
+			additional = {
+				'client': self.client,
+				'change_embed': self.make_agency_embed
+			}
+			view = PaginatorView(list(movies.items()), increment=6, **additional)
+			embed = await view.make_embed(ctx.author)
+			await ctx.respond(embed=embed, view=view)
 
-			def check(reaction, user) -> bool:
-				return str(reaction.message.id) == str(msg.id) and user == ctx.author and str(reaction.emoji) in ['⬅️', '➡️']
+	async def make_agency_embed(self, req: str, member: Union[discord.Member, discord.User], search: str, example: Any,
+		offset: int, lentries: int, entries: Dict[str, Any], title: str = None, result: str = None) -> discord.Embed:
+		""" Makes a paginated embed for the agency command. """
 
-			await msg.add_reaction('⬅️')
-			await msg.add_reaction('➡️')
-			lensa = len(list(space_agencies))
-			index = 0
-			while True:
-				for i in range(6):
-					try:
-						key = list(space_agencies)[index + i]
-						value = space_agencies[key]
-					except IndexError:
-						break
-					else:
-						website = f"[Website]({value[5]})" if value[5] else ''
-						embed.add_field(
-						name=f"{value[0]} {key} ({value[4]})", 
-						value=f"{value[2]} ([{value[1]}]({value[3]})). {website}", 
-						inline=True)
-						embed.set_footer(text=f"({index+1} - {index+1+i}) of {lensa}")
+		current_time = await utils.get_time_now()
 
-					await msg.edit(embed=embed)
-					embed.clear_fields()
-					try:
-						reaction, user = await self.client.wait_for('reaction_add', timeout=60, check=check)
-					except asyncio.TimeoutError:
-						await msg.remove_reaction('⬅️', self.client.user)
-						await msg.remove_reaction('➡️', self.client.user)
-						break
-					else:
-						if str(reaction.emoji) == "➡️":
-							await msg.remove_reaction(reaction.emoji, user)
-							if index + 6 < lensa:
-								index += 6
-							continue
-						elif str(reaction.emoji) == "⬅️":
-							await msg.remove_reaction(reaction.emoji, user)
-							if index > 0:
-								index -= 6
-							continue
+		embed = discord.Embed(
+			title="__Space Agencies__",
+			description='All space agencies in the world.',
+			color=member.color,
+			timestamp=current_time,
+			url='https://en.wikipedia.org/wiki/List_of_government_space_agencies#List_of_space_agencies'
+		)
 
-	@slash_command(guild_ids=TEST_GUILDS)
+		for i in range(6):
+			try:
+				key = list(space_agencies)[offset -1 +i]
+				value = space_agencies[key]
+			except IndexError:
+				break
+			else:
+				website = f"[Website]({value[5]})" if value[5] else ''
+				embed.add_field(
+					name=f"{value[0]} {key} ({value[4]})", 
+					value=f"{value[2]} ([{value[1]}]({value[3]})). {website}", 
+					inline=True)
+				embed.set_footer(text=f"({offset} - {offset+i}) of {lentries}")
+
+
+		return embed
+
+	@slash_command()
 	@commands.cooldown(1, 10, type=commands.BucketType.user)
 	async def movie(self, ctx, title: Option(str, name="title", description="The name/title of the movie.", required=False)) -> None:
 		""" Shows some movies about astronomy and space. Or a specific one. """
 
 		await ctx.defer()
+		current_time = await utils.get_time_now()
 
 		if title:
 			all_titles = movies.keys()
@@ -202,7 +194,7 @@ class Astronomy(commands.Cog):
 			embed = discord.Embed(
 				title=f"🎥 __{the_movie}__ ({m[1]})",
 				description=f"{m[0]}",
-				timestamp=ctx.message.created_at,
+				timestamp=current_time,
 				color=ctx.author.color,
 				url=m[2]
 			)
@@ -248,7 +240,7 @@ class Astronomy(commands.Cog):
 				inline=True
 			)
 
-			embed.set_footer(text=f"({offset} - {offset}) of {lentries}")
+			embed.set_footer(text=f"{offset}/{lentries}")
 
 		return embed
 
@@ -561,7 +553,7 @@ class Astronomy(commands.Cog):
 		return embed
 
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	@slash_command(guild_ids=TEST_GUILDS)
+	@slash_command()
 	async def location(self, ctx, 
 		country_code: Option(str, name="country_code", description="The country acronym (e.g = USA)", required=False, default='')
 	) -> None:
