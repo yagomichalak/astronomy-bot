@@ -182,11 +182,12 @@ class Astronomy(commands.Cog):
 								index -= 6
 							continue
 
-	@commands.command()
+	@slash_command(guild_ids=TEST_GUILDS)
 	@commands.cooldown(1, 10, type=commands.BucketType.user)
-	async def movie(self, ctx, *, title: str = None) -> None:
-		""" Shows some movies about astronomy and space. Or a specific one.
-		:param title: The name/title of the movie. """
+	async def movie(self, ctx, title: Option(str, name="title", description="The name/title of the movie.", required=False)) -> None:
+		""" Shows some movies about astronomy and space. Or a specific one. """
+
+		await ctx.defer()
 
 		if title:
 			all_titles = movies.keys()
@@ -195,7 +196,7 @@ class Astronomy(commands.Cog):
 					the_movie = t
 					break
 			else:
-				return await ctx.send(f"**{ctx.author.mention}, '`{title.title()}`' is either not a movie or not a movie that's in my list!**")
+				return await ctx.respond(f"**{ctx.author.mention}, '`{title.title()}`' is either not a movie or not a movie that's in my list!**")
 
 			m = movies[the_movie]
 			embed = discord.Embed(
@@ -206,62 +207,50 @@ class Astronomy(commands.Cog):
 				url=m[2]
 			)
 			embed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.display_avatar)
-			await ctx.send(embed=embed)
+			await ctx.respond(embed=embed)
 
 		else:
 			refs = ['https://spacenews.com/11-must-see-space-movies-for-anyone-serious-about-space/', 'https://www.theringer.com/2017/9/11/16285932/25-best-space-movies-ranked']
 			refs = [f"[link{i+1}]({r})" for i, r in enumerate(refs)]
-			embed = discord.Embed(
-				title="🎥 __Movies About Astronomy and Space__ 🎥",
-				description=f"Refs: {', '.join(refs)}",
-				color=ctx.author.color,
-				timestamp=ctx.message.created_at
+
+			additional = {
+				'client': self.client,
+				'result': ', '.join(refs),
+				'change_embed': self.make_movie_embed
+			}
+			view = PaginatorView(list(movies.items()), **additional)
+			embed = await view.make_embed(ctx.author)
+			await ctx.respond(embed=embed, view=view)
+
+			
+	async def make_movie_embed(self, req: str, member: Union[discord.Member, discord.User], search: str, example: Any,
+		offset: int, lentries: int, entries: Dict[str, Any], title: str = None, result: str = None) -> discord.Embed:
+		""" Makes a paginated embed for the movie command. """
+
+		current_time = await utils.get_time_now()
+
+		embed = discord.Embed(
+			title="🎥 __Movies About Astronomy and Space__ 🎥",
+			description=f"Refs: {result}",
+			color=member.color,
+			timestamp=current_time
+		)
+		entries = dict(entries)
+		try:
+			key = list(entries)[offset - 1]
+			value = entries[key]
+		except IndexError:
+			pass
+		else:
+			embed.add_field(
+				name=f"{offset}# {key} ({value[1]})",
+				value=f"{value[0]}. [[+]]({value[2]})",
+				inline=True
 			)
 
-			msg = await ctx.send(embed=embed)
+			embed.set_footer(text=f"({offset} - {offset}) of {lentries}")
 
-			def check(reaction, user):
-				return str(reaction.message.id) == str(msg.id) and user == ctx.author and str(reaction.emoji) in ['⬅️', '➡️']
-
-			await msg.add_reaction('⬅️')
-			await msg.add_reaction('➡️')
-			lenmo = len(list(movies))
-			index = 0
-			while True:
-				for i in range(2):
-					try:
-						key = list(movies)[index + i]
-						value = movies[key]
-					except IndexError:
-						break
-					else:
-						embed.add_field(
-						name=f"{index+1+i}# {key} ({value[1]})",
-						value=f"{value[0]}. [[+]]({value[2]})",
-						inline=True
-						)
-
-						embed.set_footer(text=f"({index+1} - {index+1+i}) of {lenmo}")
-
-					await msg.edit(embed=embed)
-					embed.clear_fields()
-					try:
-						reaction, user = await self.client.wait_for('reaction_add', timeout=60, check=check)
-					except asyncio.TimeoutError:
-						await msg.remove_reaction('⬅️', self.client.user)
-						await msg.remove_reaction('➡️', self.client.user)
-						break
-					else:
-						if str(reaction.emoji) == "➡️":
-							await msg.remove_reaction(reaction.emoji, user)
-							if index + 2 < lenmo:
-								index += 2
-							continue
-						elif str(reaction.emoji) == "⬅️":
-							await msg.remove_reaction(reaction.emoji, user)
-							if index > 0:
-								index -= 2
-							continue
+		return embed
 
 	@commands.command(hidden=True)
 	@commands.is_owner()
