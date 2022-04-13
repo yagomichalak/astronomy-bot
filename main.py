@@ -56,6 +56,34 @@ async def on_command_error(ctx, error) -> None:
 	print(error)
 
 @client.event
+async def on_application_command_error(ctx, error) -> None:
+	""" On error command handler. """
+
+	if isinstance(error, commands.MissingPermissions):
+		await ctx.send(error)
+
+	if isinstance(error, commands.BotMissingPermissions):
+		await ctx.respond("**I don't have permissions to run this command!**")
+
+	if isinstance(error, commands.BadArgument):
+		await ctx.respond("**Invalid parameters!**")
+
+	if isinstance(error, commands.CommandOnCooldown):
+		secs = error.retry_after
+		if int(secs) >= 60:
+			await ctx.respond(f"You are on cooldown! Try again in {secs/60:.1f} minutes!")
+		else:
+			await ctx.respond(error)
+		
+	if isinstance(error, commands.NotOwner):
+		await ctx.respond("**You can't do that, you're not the owner!**")
+
+	if isinstance(error, commands.MissingRequiredArgument):
+		await ctx.respond('**Make sure to inform all parameters!**')
+
+	print(error)
+
+@client.event
 async def on_guild_join(guild) -> None:
 	""" Logs when the bot joins a new server. """
 

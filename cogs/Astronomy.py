@@ -552,8 +552,8 @@ class Astronomy(commands.Cog):
 		embed.set_thumbnail(url=example['profile_image_thumbnail'])
 		return embed
 
-	@commands.cooldown(1, 10, commands.BucketType.user)
 	@slash_command()
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def location(self, ctx, 
 		country_code: Option(str, name="country_code", description="The country acronym (e.g = USA)", required=False, default='')
 	) -> None:
@@ -598,9 +598,6 @@ class Astronomy(commands.Cog):
 		embed.set_footer(text=f"Requested by {member}", icon_url=member.display_avatar)
 
 		return embed
-
-
-
 
 def setup(client: commands.Bot) -> None:
 	""" Cog's setup function. """
