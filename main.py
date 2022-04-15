@@ -152,7 +152,7 @@ async def in_servers() -> None:
 	except Exception:
 		pass
 
-@discord.slash_command()
+@slash_command()
 async def ping(ctx) -> None:
 	""" Shows the latency. """
 
