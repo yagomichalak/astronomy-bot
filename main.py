@@ -1,17 +1,13 @@
 import discord
 from discord.ext import commands, tasks
 from discord.utils import escape_mentions
-import inspect
-import io
-import textwrap
-import traceback
-from contextlib import redirect_stdout
+from discord import slash_command
 import os
+from extra import utils
 from itertools import cycle
 from re import match
 from dotenv import load_dotenv
 load_dotenv()
-from typing import Optional
 
 client = commands.Bot(command_prefix='o!', intents=discord.Intents.default(), help_command=None)
 on_guild_log_id: int = int(os.getenv('ON_GUILD_LOG_ID'))
@@ -156,11 +152,11 @@ async def in_servers() -> None:
 	except Exception:
 		pass
 
-@client.command()
+@discord.slash_command()
 async def ping(ctx) -> None:
 	""" Shows the latency. """
 
-	await ctx.send(f"**Ping: __{round(client.latency * 1000)}__ ms**")
+	await ctx.respond(f"**Ping: __{round(client.latency * 1000)}__ ms**")
 
 
 @client.command()
@@ -168,7 +164,9 @@ async def ping(ctx) -> None:
 async def info(ctx):
 	""" Shows some information about the bot itself. """
 
-	embed = discord.Embed(title='Artemis Bot', description="__**WHAT IS IT?:**__```Hello, the Artemis Bot is an open source bot based on astronomy, which its only purpose is to portray information about the universe.```", colour=discord.Colour.dark_purple(), url="https://theartemisbot.herokuapp.com", timestamp=ctx.message.created_at)
+	await ctx.defer()
+	current_time = await utils.get_time_now()
+	embed = discord.Embed(title='Artemis Bot', description="__**WHAT IS IT?:**__```Hello, the Artemis Bot is an open source bot based on astronomy, which its only purpose is to portray information about the universe.```", colour=discord.Colour.dark_purple(), url="https://theartemisbot.herokuapp.com", timestamp=current_time)
 	embed.add_field(name="📚 __**Topics**__",
 				value="`27` topics about the universe to explore.",
 				inline=True)
@@ -181,297 +179,60 @@ async def info(ctx):
 	embed.add_field(name="🎥 __**Movies**__",
 				value="A special list with `34` movies about astronomy and space in general.",
 				inline=True)
-	embed.add_field(name="🎮 __**Minigames**__",
-				value="It currently has a quiz game and a short story, choice-based game.",
-				inline=True)
-	embed.add_field(name="🌎 __**Global ranking**__ ", 
-				value="It has a global level ranking system universe themed.",       inline=True)
 	embed.set_footer(text=ctx.guild.name,
 				icon_url='https://cdn.discordapp.com/attachments/719020754858934294/720294157406568458/universe_hub_server_icon.png')
 	embed.set_thumbnail(
 	url=client.user.display_avatar)
-	embed.set_author(name='DNK#6725', url='https://discord.gg/7DyWxSt',
+	embed.set_author(name='DNK#6725', url='https://discord.gg/languages',
 				icon_url='https://cdn.discordapp.com/attachments/719020754858934294/720289112040669284/DNK_icon.png')
-	await ctx.send(embed=embed)
+	await ctx.respond(embed=embed)
 
-@client.command()
+@slash_command()
 async def invite(ctx):
 	""" Sends the bot's invite. """
 
-	invite = 'https://discord.com/oauth2/authorize?client_id=723699955008798752&permissions=126016&scope=bot'
-	await ctx.send(f"Here's my invite:\n{invite}")
-
-
-@client.command(hidden=True)
-@commands.is_owner()
-async def eval(ctx, *, body=None):
-	""" (OWNER) Executes a given command from Python onto Discord.
-	:param body: The body of the command. """
-
-	await ctx.message.delete()
-	if not body:
-		return await ctx.send("**Please, inform the code body!**")
-
-	"""Evaluates python code"""
-	env = {
-		'ctx': ctx,
-		'client': client,
-		'channel': ctx.channel,
-		'author': ctx.author,
-		'guild': ctx.guild,
-		'message': ctx.message,
-		'source': inspect.getsource
-	}
-
-	def cleanup_code(content):
-		"""Automatically removes code blocks from the code."""
-		# remove ```py\n```
-		if content.startswith('```') and content.endswith('```'):
-			return '\n'.join(content.split('\n')[1:-1])
-
-		# remove `foo`
-		return content.strip('` \n')
-
-	def get_syntax_error(e):
-		if e.text is None:
-			return f'```py\n{e.__class__.__name__}: {e}\n```'
-		return f'```py\n{e.text}{"^":>{e.offset}}\n{e.__class__.__name__}: {e}```'
-
-	env.update(globals())
-
-	body = cleanup_code(body)
-	stdout = io.StringIO()
-	err = out = None
-
-	to_compile = f'async def func():\n{textwrap.indent(body, "  ")}'
-
-	def paginate(text: str):
-		'''Simple generator that paginates text.'''
-		last = 0
-		pages = []
-		for curr in range(0, len(text)):
-			if curr % 1980 == 0:
-				pages.append(text[last:curr])
-				last = curr
-				appd_index = curr
-		if appd_index != len(text)-1:
-			pages.append(text[last:curr])
-		return list(filter(lambda a: a != '', pages))
-
-	try:
-		exec(to_compile, env)
-	except Exception as e:
-		err = await ctx.send(f'```py\n{e.__class__.__name__}: {e}\n```')
-		return await ctx.message.add_reaction('\u2049')
-
-	func = env['func']
-	try:
-		with redirect_stdout(stdout):
-			ret = await func()
-	except Exception as e:
-		value = stdout.getvalue()
-		err = await ctx.send(f'```py\n{value}{traceback.format_exc()}\n```')
-	else:
-		value = stdout.getvalue()
-		if ret is None:
-			if value:
-				try:
-
-					out = await ctx.send(f'```py\n{value}\n```')
-				except:
-					paginated_text = paginate(value)
-					for page in paginated_text:
-						if page == paginated_text[-1]:
-							out = await ctx.send(f'```py\n{page}\n```')
-							break
-						await ctx.send(f'```py\n{page}\n```')
-		else:
-			try:
-				out = await ctx.send(f'```py\n{value}{ret}\n```')
-			except:
-				paginated_text = paginate(f"{value}{ret}")
-				for page in paginated_text:
-					if page == paginated_text[-1]:
-						out = await ctx.send(f'```py\n{page}\n```')
-						break
-					await ctx.send(f'```py\n{page}\n```')
-
-	if out:
-		await ctx.message.add_reaction('\u2705')  # tick
-	elif err:
-		await ctx.message.add_reaction('\u2049')  # x
-	else:
-		await ctx.message.add_reaction('\u2705')
-
-@client.command()
-async def help(ctx, *, cmd: str =  None):
-	""" Shows some information about commands and categories. 
-	:param cmd: The command/category. """
-
-
-	if not cmd:
-		embed = discord.Embed(
-			title="All commands and categories",
-			description=f"```ini\nUse {client.command_prefix}help command or {client.command_prefix}help category to know more about a specific command or category\n\n[Examples]\n[1] Category: {client.command_prefix}help Astronomy\n[2] Command : {client.command_prefix}help listUniverse```",
-			timestamp=ctx.message.created_at,
-			color=ctx.author.color
-			)
-
-		for cog in client.cogs:
-			cog = client.get_cog(cog)
-			cog_commands = [c for c in cog.__cog_commands__ if hasattr(c, 'parent') and c.parent is None]
-			commands = [f"{client.command_prefix}{c.name}" for c in cog_commands if not c.hidden]
-			if commands:
-				embed.add_field(
-					name=f"__{cog.qualified_name}__",
-					value=f"`Commands:` {', '.join(commands)}",
-					inline=False
-					)
-
-		cmds = []
-		for y in client.walk_commands():
-			if not y.cog_name and not y.hidden:
-				cmds.append(f"{client.command_prefix}{y.name}")
-
-		embed.add_field(
-			name='__Uncategorized Commands__',
-			value=f"`Commands:` {', '.join(cmds)}",
-			inline=False)
-		await ctx.send(embed=embed)
-
-	else:  
-		cmd = escape_mentions(cmd)
-		if command := client.get_command(cmd.lower()):
-			command_embed = discord.Embed(title=f"__Command:__ {client.command_prefix}{command.qualified_name}", description=f"__**Description:**__\n```{command.help}```", color=ctx.author.color, timestamp=ctx.message.created_at)
-			return await ctx.send(embed=command_embed)
-
-		# Checks if it's a cog
-		for cog in client.cogs:
-			if str(cog).lower() == str(cmd).lower():
-				cog = client.get_cog(cog)
-				cog_embed = discord.Embed(title=f"__Cog:__ {cog.qualified_name}", description=f"__**Description:**__\n```{cog.description}```", color=ctx.author.color, timestamp=ctx.message.created_at)
-				cog_commands = [c for c in cog.__cog_commands__ if hasattr(c, 'parent') and c.parent is None]
-				for c in cog_commands:
-					if not c.hidden:
-						cog_embed.add_field(name=c.qualified_name, value=c.help, inline=False)
-
-				return await ctx.send(embed=cog_embed)
-		# Otherwise, it's an invalid parameter (Not found)
-		else:
-			await ctx.send(f"**Invalid parameter! It is neither a command nor a cog!**")
+	invite = 'https://discord.com/api/oauth2/authorize?client_id=723699955008798752&permissions=2147534912&scope=bot%20applications.commands'
+	await ctx.respond(f"Here's my invite:\n{invite}", ephemeral=True)
 
 
 
-@client.command()
+@slash_command()
 async def servers(ctx) -> None:
 	""" Shows how many servers the bot is in. """
 
-	await ctx.send(f"**I'm currently in {len(client.guilds)} servers!**")
+	await ctx.respond(f"**I'm currently in {len(client.guilds)} servers!**")
 
-@client.command(hidden=True)
-@commands.is_owner()
-async def load(ctx, extension: Optional[str] = None) -> None:
-	""" (Owner) loads a cog.
-	:param extension: The cog to load."""
-
-	if not extension:
-		return await ctx.send("**Please, inform an extension!**")
-
-	for cog in os.listdir('./cogs'):
-		if str(cog[:-3]).lower() == str(extension).lower():
-			try:
-				client.load_extension(f"cogs.{cog[:-3]}")
-			except commands.ExtensionAlreadyLoaded:
-				return await ctx.send(f"**The `{extension}` cog is already loaded!**")
-			return await ctx.send(f"**`{extension}` cog loaded!**")
-	else:
-		await ctx.send(f"**`{extension}` is not a cog!**")
-
-
-@client.command(hidden=True)
-@commands.is_owner()
-async def unload(ctx, extension: Optional[str] = None) -> None:
-	""" (Owner) unloads a cog.
-	:param extension: The cog to unload. """
-
-	if not extension:
-		return await ctx.send("**Please, inform an extension!**")
-
-	for cog in client.cogs:
-		if str(cog).lower() == str(extension).lower():
-			try:
-				client.unload_extension(f"cogs.{cog}")
-			except commands.ExtensionNotLoaded:
-				return await ctx.send(f"**The `{extension}` cog is not even loaded!**")
-			return await ctx.send(f"**`{extension}` cog unloaded!**")
-	else:
-		await ctx.send(f"**`{extension}` is not a cog!**")
-
-
-@client.command(hidden=True)
-@commands.is_owner()
-async def reload(ctx, extension: Optional[str] = None) -> None:
-	""" (Owner) reloads a cog.
-	:param extension: The cog to reload. """
-
-	if not extension:
-		return await ctx.send("**Please, inform an extension!**")
-	
-	for cog in client.cogs:
-		if str(cog).lower() == str(extension).lower():
-			try:
-				client.unload_extension(f"cogs.{cog}")
-				client.load_extension(f"cogs.{cog}")
-			except commands.ExtensionNotLoaded:
-				return await ctx.send(f"**The `{extension}` cog is not even loaded!**")
-			return await ctx.send(f"**`{extension}` cog reloaded!**")
-	else:
-		await ctx.send(f"**`{extension}` is not a cog!**")
-
-
-@client.command(hidden=True)
-@commands.is_owner()
-async def reload_all(ctx) -> None:
-	""" (Owner) reloads all cogs. """
-
-	for file_name in os.listdir('./cogs'):
-		try:
-			if str(file_name).endswith(".py"):
-				client.unload_extension(f"cogs.{file_name[:-3]}")
-				client.load_extension(f"cogs.{file_name[:-3]}")
-		except commands.ExtensionNotLoaded:
-			pass
-	await ctx.send(f"**Cogs reloaded!**")
-
-@client.command()
+@slash_command()
 async def support(ctx) -> None:
 	""" Support for the bot and its commands. """
 
 	link = 'https://discord.gg/6GXvrck'
+	current_time = await utils.get_time_now()
 
 	embed = discord.Embed(
 		title="__Support__",
 		description=f"For any support; in other words, questions, suggestions or doubts concerning the bot and its commands, contact me **DNK#6725**, or join our support server by clicking [here]({link})",
-		timestamp=ctx.message.created_at,
+		timestamp=current_time,
 		url=link,
 		color=ctx.author.color
 	)
-	await ctx.send(embed=embed)
+	await ctx.respond(embed=embed)
 
-@client.command(aliases=['patron'])
+@slash_command(aliases=['patron'])
 async def patreon(ctx) -> None:
 	""" Support the creator on Patreon. """
 
 	link = 'https://www.patreon.com/dnk'
+	current_time = await utils.get_time_now()
 
 	embed = discord.Embed(
 		title="__Patreon__",
 		description=f"If you want to finacially support my work and motivate me to keep adding more features, put more effort and time into this and other bots, click [here]({link})",
-		timestamp=ctx.message.created_at,
-		url=link,
-		color=ctx.author.color
+		color=ctx.author.color,
+		timestamp=current_time,
+		url=link
 	)
-	await ctx.send(embed=embed)
+	await ctx.respond(embed=embed, ephemeral=True)
 
 
 for file_name in os.listdir('./cogs'):
