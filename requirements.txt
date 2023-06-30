@@ -7,7 +7,7 @@ py-cord==2.0.0b5
 docopt==0.6.2
 idna==2.10
 multidict==5.1.0
-pipreqs==0.4.10
+pipreqs==0.4.12
 requests==2.25.1
 typing-extensions==3.10.0.0
 urllib3==1.26.6
